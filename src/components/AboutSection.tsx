@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { Compass, Flame, Shield, TrendingUp, Layers, ExternalLink } from "lucide-react";
+import Link from "next/link";
+import { Compass, Flame, Shield, TrendingUp, Layers, ExternalLink, ArrowRight } from "lucide-react";
 import { CreatorAvatar } from "./CreatorAvatar";
 
 interface AboutSectionProps {
@@ -69,6 +70,14 @@ export function AboutSection({ onFilterMovers, onFilterCrypto }: AboutSectionPro
               Players collect digital creator cards (spanning streamers, tech founders, crypto thinkers, and media personalities),
               draft a 5-person weekly lineup, and compete based on creator performance scores.
             </p>
+
+            <Link
+              href="/how-it-works"
+              className="inline-flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 font-medium transition-colors mt-3 group"
+            >
+              <span>Read 1-minute visual guide & meta</span>
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+            </Link>
           </div>
         </div>
 
