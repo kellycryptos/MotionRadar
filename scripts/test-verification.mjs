@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { FALLBACK_LEADERBOARD } from "../src/lib/fixture-data.ts";
 import { isCryptoCreator } from "../src/lib/crypto-creators.ts";
+import { getCreatorHandle } from "../src/lib/creator-handles.ts";
 import { computeLeaderboardStats, getBiggestMovers } from "../src/lib/api.ts";
 import {
   getScoutSignal,
@@ -17,6 +18,21 @@ assert.ok(
   "Fallback leaderboard rows must have at least 70 creators"
 );
 assert.ok(FALLBACK_LEADERBOARD.asOf, "asOf timestamp must be present");
+
+// 1b. Verify all 79 creators resolve to valid X handles
+let missingHandles = 0;
+for (const creator of FALLBACK_LEADERBOARD.rows) {
+  const handle = creator.handle || getCreatorHandle(creator);
+  assert.ok(
+    Boolean(handle),
+    `Creator "${creator.name}" must resolve to a valid X handle`
+  );
+  assert.ok(
+    !handle.includes("/"),
+    `Handle for "${creator.name}" should not contain slashes: "${handle}"`
+  );
+}
+console.log(`✔ All ${FALLBACK_LEADERBOARD.rows.length} creators resolved to verified X handles`);
 
 // 2. Crypto Creators Check
 const requiredCryptoNames = [
