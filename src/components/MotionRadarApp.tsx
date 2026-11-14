@@ -34,7 +34,9 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
   const [data, setData] = useState<LeaderboardResponse>(initialResult.data);
   const [isLive, setIsLive] = useState<boolean>(!initialResult.isFallback);
   const [lastUpdated, setLastUpdated] = useState<string>(
-    initialResult.data.baselineCapturedAt || initialResult.data.capturedAt || initialResult.fetchedAt
+    initialResult.data.baselineCapturedAt ||
+      initialResult.data.capturedAt ||
+      initialResult.fetchedAt
   );
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     initialResult.error
@@ -58,7 +60,9 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
         setData(result.data);
         setIsLive(!result.isFallback);
         setLastUpdated(
-          result.data.baselineCapturedAt || result.data.capturedAt || result.fetchedAt
+          result.data.baselineCapturedAt ||
+            result.data.capturedAt ||
+            result.fetchedAt
         );
         setErrorMessage(result.error);
       } catch (err) {
@@ -133,7 +137,9 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
   }, [data.rows, searchQuery, selectedFilter, sortOption, activePreset]);
 
   // Preset Handler
-  const handleApplyPreset = (preset: "all" | "ct-elite" | "top-10" | "high-volatility") => {
+  const handleApplyPreset = (
+    preset: "all" | "ct-elite" | "top-10" | "high-volatility"
+  ) => {
     if (preset === "all") {
       setActivePreset(null);
       setSelectedFilter("all");
@@ -157,7 +163,7 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#090a0f] text-neutral-100">
+    <div className="min-h-screen flex flex-col bg-[#09090B] text-zinc-100">
       {/* Sticky Header */}
       <Header
         lastUpdated={lastUpdated}
@@ -168,10 +174,10 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-6">
         {/* Fallback Banner if API was unreachable */}
         {!isLive && (
-          <div className="flex items-center gap-2.5 px-4 py-2.5 bg-amber-500/10 border border-amber-500/30 rounded-lg text-xs text-amber-200">
+          <div className="flex items-center gap-2.5 px-4 py-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-200">
             <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
             <div className="flex-1">
               <span>Using cached baseline snapshot</span>
@@ -190,25 +196,21 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
           </div>
         )}
 
-        {/* Hero Title & Description */}
-        <div className="space-y-1">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-            MotionRadar
-          </h1>
-          <p className="text-sm text-neutral-400 max-w-2xl">
+        {/* Consolidated Subtitle (H1 removed to match design specs) */}
+        <div className="-mt-1">
+          <p className="text-xs sm:text-sm text-zinc-400">
             Live cultural attention & momentum tracker for the Motion game leaderboard.
-            Spot top rank movers, identify breakout creators, and scout lineups for Mogathon.
           </p>
         </div>
 
-        {/* Stats Row */}
+        {/* Summary Stat Cards (4-Column Top Grid) */}
         <StatSummary stats={stats} onSelectCreator={handleSelectCreator} />
 
-        {/* Dedicated Biggest Movers Section */}
+        {/* Asymmetric Bento Grid for Biggest Movers */}
         <BiggestMovers movers={topMovers} onSelectCreator={handleSelectCreator} />
 
-        {/* Controls & Table */}
-        <section className="space-y-4 pt-2">
+        {/* Unified Filter & Control Toolbar + High-Density Table */}
+        <section className="space-y-4 pt-1">
           <LeaderboardControls
             searchQuery={searchQuery}
             onSearchChange={(q) => {
@@ -242,7 +244,7 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-surface-border mt-12 py-6 bg-surface/50 text-xs text-neutral-500">
+      <footer className="border-t border-white/[0.08] mt-12 py-6 bg-[#09090B] text-xs text-zinc-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
             Built for{" "}
@@ -250,7 +252,7 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
               href="https://fluent-labs.notion.site/mogathon"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-neutral-400 hover:text-white underline"
+              className="text-zinc-400 hover:text-white underline"
             >
               Mogathon
             </a>{" "}
@@ -270,7 +272,7 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
               href="https://seats.motion.game"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-neutral-300 transition"
+              className="hover:text-zinc-300 transition"
             >
               Motion Seats
             </a>
@@ -279,7 +281,7 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
               href="https://github.com/kellycryptos/MotionRadar"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-neutral-300 transition"
+              className="hover:text-zinc-300 transition"
             >
               GitHub
             </a>

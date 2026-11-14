@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #090a0f;
-  --foreground: #f3f4f6;
+  --background: #09090B;
+  --foreground: #f4f4f5;
 }
 
 body {
@@ -15,12 +15,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Linear-style sleek subtle grid */
-.bg-radar-grid {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-
 /* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
@@ -28,27 +22,14 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #090a0f;
+  background: #09090B;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1f2433;
+  background: #27272a;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #2e354b;
-}
-
-/* Custom glowing borders */
-.glow-emerald {
-  box-shadow: 0 0 20px -5px rgba(16, 185, 129, 0.2);
-}
-
-.glow-red {
-  box-shadow: 0 0 20px -5px rgba(239, 68, 68, 0.2);
-}
-
-.glow-purple {
-  box-shadow: 0 0 20px -5px rgba(139, 92, 246, 0.2);
+  background: #3f3f46;
 }

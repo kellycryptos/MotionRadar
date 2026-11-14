@@ -40,10 +40,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
-        <meta name="theme-color" content="#090a0f" />
+        <meta name="theme-color" content="#09090B" />
         <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2310b981'><circle cx='12' cy='12' r='10'/><path d='M12 2a10 10 0 0 1 10 10' stroke='%23ffffff' stroke-width='2' fill='none'/></svg>" />
       </head>
-      <body className="min-h-screen bg-[#090a0f] text-neutral-100 antialiased selection:bg-emerald-500/20 selection:text-emerald-300">
+      <body className="min-h-screen bg-[#09090B] text-zinc-100 antialiased selection:bg-emerald-500/20 selection:text-emerald-300">
         {children}
       </body>
     </html>

@@ -19,62 +19,66 @@ export function Header({
   onRefresh,
   onOpenShareModal,
 }: HeaderProps) {
+  const timeAgo = formatTimeAgo(lastUpdated);
+
   return (
-    <header className="border-b border-surface-border bg-[#090a0f]/80 backdrop-blur-md sticky top-0 z-30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
-        {/* Logo & Identity */}
-        <div className="flex items-center gap-3">
-          <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-surface border border-surface-border overflow-hidden">
-            <Radio className="w-4 h-4 text-emerald-400" />
-            <span className="absolute inset-0 rounded-lg ring-1 ring-emerald-500/20" />
+    <header className="border-b border-white/[0.08] bg-[#09090B]/80 backdrop-blur-md sticky top-0 z-30">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
+        {/* Brand & MOGATHON Badge */}
+        <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
+            <Radio className="w-4 h-4 text-zinc-300" />
+            <span className="font-bold tracking-tight text-white text-base">
+              MotionRadar
+            </span>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-semibold tracking-tight text-white text-base">MotionRadar</span>
-              <span className="text-[10px] uppercase font-mono font-medium tracking-wider px-1.5 py-0.5 rounded bg-surface-accent text-neutral-300 border border-surface-border">
-                Mogathon
-              </span>
-            </div>
-          </div>
+
+          <span className="text-[10px] uppercase font-mono font-semibold tracking-wider px-2 py-0.5 rounded-full bg-white/[0.06] text-zinc-300 border border-white/[0.08]">
+            MOGATHON
+          </span>
         </div>
 
-        {/* Status & Actions */}
-        <div className="flex items-center gap-2.5">
-          {/* Live Status indicator */}
-          <div
-            title={`Baseline updated: ${formatUtcDateTime(lastUpdated)}`}
-            className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-surface border border-surface-border text-xs font-mono"
-          >
-            <span
-              className={`w-2 h-2 rounded-full ${
-                isLive ? "bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" : "bg-amber-400"
-              }`}
-            />
-            <span className="text-neutral-300 hidden sm:inline">
-              {isLive ? "Live" : "Cached"}
-            </span>
-            <span className="text-neutral-500 text-[11px]">
-              {formatTimeAgo(lastUpdated)}
-            </span>
+        {/* Status Pill, Refresh & Share */}
+        <div className="flex items-center gap-2">
+          {/* Status badge with integrated refresh button */}
+          <div className="flex items-center bg-[#121215] border border-white/[0.08] rounded-xl pl-2.5 pr-1 py-1 text-xs font-mono shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
+            <div
+              className="flex items-center gap-2 pr-2"
+              title={`Captured: ${formatUtcDateTime(lastUpdated)}`}
+            >
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  isLive
+                    ? "bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]"
+                    : "bg-amber-400"
+                }`}
+              />
+              <span className="text-zinc-400 text-xs font-sans">
+                {isLive ? `Updated ${timeAgo}` : `Cached ${timeAgo}`}
+              </span>
+            </div>
+
+            <button
+              onClick={onRefresh}
+              disabled={isRefreshing}
+              aria-label="Refresh leaderboard"
+              className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.06] transition disabled:opacity-50"
+            >
+              <RefreshCw
+                className={`w-3.5 h-3.5 ${
+                  isRefreshing ? "animate-spin text-emerald-400" : ""
+                }`}
+              />
+            </button>
           </div>
 
-          {/* Refresh Action */}
-          <button
-            onClick={onRefresh}
-            disabled={isRefreshing}
-            aria-label="Refresh leaderboard"
-            className="p-1.5 rounded-md bg-surface border border-surface-border text-neutral-400 hover:text-white hover:border-neutral-700 transition disabled:opacity-50"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-emerald-400" : ""}`} />
-          </button>
-
-          {/* Mogathon / Share Action */}
+          {/* Share Button */}
           <button
             onClick={onOpenShareModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-medium transition"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#121215] hover:bg-white/[0.06] text-zinc-200 border border-white/[0.08] text-xs font-medium transition shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]"
           >
-            <Share2 className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Share</span>
+            <Share2 className="w-3.5 h-3.5 text-zinc-400" />
+            <span>Share</span>
           </button>
         </div>
       </div>
