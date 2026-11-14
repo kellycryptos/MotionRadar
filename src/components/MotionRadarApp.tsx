@@ -10,6 +10,7 @@ import {
   SortOption,
 } from "./LeaderboardControls";
 import { LeaderboardTable } from "./LeaderboardTable";
+import { AboutSection } from "./AboutSection";
 import { MogathonModal } from "./MogathonModal";
 import {
   LeaderboardCreator,
@@ -235,6 +236,9 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
             onSelectCreator={handleSelectCreator}
           />
         </section>
+
+        {/* Detailed About & Methodology Section */}
+        <AboutSection />
       </main>
 
       {/* Footer */}
@@ -263,15 +267,6 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
 
           <div className="flex items-center gap-4 font-mono text-[11px]">
             <a
-              href="https://leaderboard.motion.game/api/leaderboard"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-neutral-300 transition"
-            >
-              Motion API
-            </a>
-            <span>•</span>
-            <a
               href="https://seats.motion.game"
               target="_blank"
               rel="noopener noreferrer"
@@ -281,12 +276,12 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
             </a>
             <span>•</span>
             <a
-              href="https://x.com/callmogbot"
+              href="https://github.com/kellycryptos/MotionRadar"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-neutral-300 transition"
             >
-              @callmogbot
+              GitHub
             </a>
           </div>
         </div>
