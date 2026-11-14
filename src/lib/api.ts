@@ -1,6 +1,7 @@
 import { LeaderboardCreator, LeaderboardResponse, LeaderboardStats } from "../types/leaderboard";
 import { FALLBACK_LEADERBOARD } from "./fixture-data";
 import { isCryptoCreator } from "./crypto-creators";
+import { getCreatorHandle } from "./creator-handles";
 
 export interface FetchResult {
   data: LeaderboardResponse;
@@ -39,8 +40,20 @@ export async function getLeaderboardData(): Promise<FetchResult> {
       throw new Error("Invalid response format received from Motion API");
     }
 
+    const enrichedRows: LeaderboardCreator[] = json.rows.map((row) => {
+      const handle = row.handle || getCreatorHandle(row.name);
+      return {
+        ...row,
+        handle,
+        xUrl: row.xUrl || (handle ? `https://x.com/${handle}` : undefined),
+      };
+    });
+
     return {
-      data: json,
+      data: {
+        ...json,
+        rows: enrichedRows,
+      },
       isFallback: false,
       source: "live",
       fetchedAt: now,
@@ -49,8 +62,20 @@ export async function getLeaderboardData(): Promise<FetchResult> {
     const errorMessage = err instanceof Error ? err.message : "Failed to fetch live data";
     console.warn("Using offline fallback fixture due to error:", errorMessage);
 
+    const enrichedFallbackRows: LeaderboardCreator[] = FALLBACK_LEADERBOARD.rows.map((row) => {
+      const handle = row.handle || getCreatorHandle(row.name);
+      return {
+        ...row,
+        handle,
+        xUrl: row.xUrl || (handle ? `https://x.com/${handle}` : undefined),
+      };
+    });
+
     return {
-      data: FALLBACK_LEADERBOARD,
+      data: {
+        ...FALLBACK_LEADERBOARD,
+        rows: enrichedFallbackRows,
+      },
       isFallback: true,
       error: errorMessage,
       source: "fallback",

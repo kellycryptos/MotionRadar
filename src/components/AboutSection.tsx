@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Compass, Flame, Shield, TrendingUp, Layers, ExternalLink } from "lucide-react";
+import { CreatorAvatar } from "./CreatorAvatar";
 
 interface AboutSectionProps {
   onFilterMovers?: () => void;
@@ -33,13 +34,20 @@ export function AboutSection({ onFilterMovers, onFilterCrypto }: AboutSectionPro
             {/* Visual Micro-Box */}
             <div className="bg-[#09090B]/60 border border-white/[0.05] rounded-xl p-3 mb-4 flex items-center justify-between">
               <div className="flex items-center -space-x-1.5">
-                {["VR", "AN", "CO", "VB", "TY"].map((initials, idx) => (
-                  <div
+                {[
+                  { initials: "VR", name: "Valkyrae", handle: "Valkyrae" },
+                  { initials: "AN", name: "Ansem", handle: "blknoiz06" },
+                  { initials: "CO", name: "Cobie", handle: "cobie" },
+                  { initials: "VB", name: "Vitalik Buterin", handle: "VitalikButerin" },
+                  { initials: "TY", name: "Toly", handle: "aeyakovenko" },
+                ].map((c, idx) => (
+                  <CreatorAvatar
                     key={idx}
-                    className="w-6 h-6 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-900 border border-[#121215] flex items-center justify-center text-[9px] font-mono font-bold text-zinc-200"
-                  >
-                    {initials}
-                  </div>
+                    name={c.name}
+                    handle={c.handle}
+                    initials={c.initials}
+                    className="w-6 h-6 rounded-full object-cover border border-[#121215] shrink-0"
+                  />
                 ))}
                 <span className="text-[10px] font-mono text-zinc-500 ml-2">Lineup</span>
               </div>

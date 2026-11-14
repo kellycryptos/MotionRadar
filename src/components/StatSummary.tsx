@@ -3,6 +3,7 @@
 import React from "react";
 import { TrendingUp, TrendingDown, Users, Flame } from "lucide-react";
 import { LeaderboardStats } from "@/types/leaderboard";
+import { CreatorAvatar } from "./CreatorAvatar";
 
 interface StatSummaryProps {
   stats: LeaderboardStats;
@@ -95,15 +96,23 @@ export function StatSummary({ stats, onSelectCreator }: StatSummaryProps) {
         </div>
 
         <div className="my-1 sm:my-2 flex items-center justify-between gap-1.5 relative z-10">
-          <div className="flex items-baseline gap-1 sm:gap-2 truncate min-w-0">
+          <div className="flex items-center gap-2 truncate min-w-0">
             {stats.topGainer && (
-              <span className="text-[10px] sm:text-xs font-mono text-zinc-500 shrink-0">
-                #{stats.topGainer.position}
-              </span>
+              <CreatorAvatar
+                creator={stats.topGainer}
+                className="w-6 h-6 sm:w-7 sm:h-7"
+              />
             )}
-            <span className="text-xs sm:text-base font-semibold text-white group-hover:text-zinc-200 transition truncate">
-              {stats.topGainer ? stats.topGainer.name : "None"}
-            </span>
+            <div className="flex items-baseline gap-1 sm:gap-2 truncate min-w-0">
+              {stats.topGainer && (
+                <span className="text-[10px] sm:text-xs font-mono text-zinc-500 shrink-0">
+                  #{stats.topGainer.position}
+                </span>
+              )}
+              <span className="text-xs sm:text-base font-semibold text-white group-hover:text-zinc-200 transition truncate">
+                {stats.topGainer ? stats.topGainer.name : "None"}
+              </span>
+            </div>
           </div>
 
           {stats.topGainer && (
@@ -137,15 +146,23 @@ export function StatSummary({ stats, onSelectCreator }: StatSummaryProps) {
         </div>
 
         <div className="my-1 sm:my-2 flex items-center justify-between gap-1.5 relative z-10">
-          <div className="flex items-baseline gap-1 sm:gap-2 truncate min-w-0">
+          <div className="flex items-center gap-2 truncate min-w-0">
             {stats.topLoser && (
-              <span className="text-[10px] sm:text-xs font-mono text-zinc-500 shrink-0">
-                #{stats.topLoser.position}
-              </span>
+              <CreatorAvatar
+                creator={stats.topLoser}
+                className="w-6 h-6 sm:w-7 sm:h-7"
+              />
             )}
-            <span className="text-xs sm:text-base font-semibold text-white group-hover:text-zinc-200 transition truncate">
-              {stats.topLoser ? stats.topLoser.name : "None"}
-            </span>
+            <div className="flex items-baseline gap-1 sm:gap-2 truncate min-w-0">
+              {stats.topLoser && (
+                <span className="text-[10px] sm:text-xs font-mono text-zinc-500 shrink-0">
+                  #{stats.topLoser.position}
+                </span>
+              )}
+              <span className="text-xs sm:text-base font-semibold text-white group-hover:text-zinc-200 transition truncate">
+                {stats.topLoser ? stats.topLoser.name : "None"}
+              </span>
+            </div>
           </div>
 
           {stats.topLoser && (

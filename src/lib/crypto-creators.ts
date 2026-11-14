@@ -20,7 +20,7 @@ export const KNOWN_CRYPTO_CREATORS: Record<string, CryptoCreatorInfo> = {
   },
   minhxdynasty: {
     name: "MINHxDYNASTY",
-    handle: "MINHxDYNASTY",
+    handle: "minhxdynasty",
     tag: "Crypto Native / Creator",
     description: "Web3 investor and crypto culture influencer"
   },
@@ -98,7 +98,7 @@ export const KNOWN_CRYPTO_CREATORS: Record<string, CryptoCreatorInfo> = {
   },
   "sir doge of the coin": {
     name: "Sir Doge of the Coin",
-    handle: "SirDogeOfTheCoin",
+    handle: "dogeofficialceo",
     tag: "Dogecoin / Memes",
     description: "Prominent meme & Doge commentator"
   },
@@ -122,7 +122,7 @@ export const KNOWN_CRYPTO_CREATORS: Record<string, CryptoCreatorInfo> = {
   },
   "taiki maeda": {
     name: "Taiki Maeda",
-    handle: "TaikiMaeda3",
+    handle: "TaikiMaeda2",
     tag: "DeFi Farmer / Content",
     description: "Popular DeFi educator and yield strategist"
   },
@@ -158,7 +158,7 @@ export const KNOWN_CRYPTO_CREATORS: Record<string, CryptoCreatorInfo> = {
   },
   coffeezilla: {
     name: "Coffeezilla",
-    handle: "coffeebreak_tech",
+    handle: "coffeebreak_YT",
     tag: "Crypto Investigator",
     description: "Leading investigative YouTuber exposing scams"
   },

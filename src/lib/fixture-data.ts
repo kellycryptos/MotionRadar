@@ -1,12 +1,8 @@
-import { LeaderboardResponse } from "../types/leaderboard";
+import { LeaderboardResponse, LeaderboardCreator } from "../types/leaderboard";
+import { getCreatorHandle } from "./creator-handles";
 
-export const FALLBACK_LEADERBOARD: LeaderboardResponse = {
-  asOf: "2026-11-14T04:00:00Z",
-  capturedAt: "2026-11-14T04:00:16.348Z",
-  baselineCapturedAt: "2026-11-14T00:00:32.794Z",
-  history: "enabled",
-  rows: [
-    { id: "cb65f56b-7b30-58fc-b456-0767e1db9ff3", name: "Druski", position: 1, delta: 0, isNew: false },
+const RAW_ROWS: LeaderboardCreator[] = [
+  { id: "cb65f56b-7b30-58fc-b456-0767e1db9ff3", name: "Druski", position: 1, delta: 0, isNew: false },
     { id: "02ff07d3-a15c-533a-b0c0-9e628761218a", name: "Marques Brownlee", position: 2, delta: 0, isNew: false },
     { id: "ba610970-8b9e-5959-9d6a-d0a6eb6be4a4", name: "IShowSpeed", position: 3, delta: 0, isNew: false },
     { id: "a65b356a-1f71-589f-b12e-08d278462b30", name: "Pat McAfee", position: 4, delta: 0, isNew: false },
@@ -85,5 +81,19 @@ export const FALLBACK_LEADERBOARD: LeaderboardResponse = {
     { id: "d15b9ca5-cdb4-50f4-bb6f-e99749d7c7b9", name: "Chris Dixon", position: 77, delta: 0, isNew: false },
     { id: "f067ce8b-6440-5b6d-8533-a22fbfd37c17", name: "Shayne Coplan", position: 78, delta: 0, isNew: false },
     { id: "fabceff4-29ef-552e-838b-8faedb26415f", name: "Brian Chesky", position: 79, delta: 0, isNew: false }
-  ]
+];
+
+export const FALLBACK_LEADERBOARD: LeaderboardResponse = {
+  asOf: "2026-11-14T04:00:00Z",
+  capturedAt: "2026-11-14T04:00:16.348Z",
+  baselineCapturedAt: "2026-11-14T00:00:32.794Z",
+  history: "enabled",
+  rows: RAW_ROWS.map((row) => {
+    const handle = getCreatorHandle(row.name);
+    return {
+      ...row,
+      handle,
+      xUrl: handle ? `https://x.com/${handle}` : undefined,
+    };
+  }),
 };

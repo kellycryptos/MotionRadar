@@ -5,6 +5,7 @@ import { Zap, Plus, Check } from "lucide-react";
 import { LeaderboardCreator } from "@/types/leaderboard";
 import { isCryptoCreator } from "@/lib/crypto-creators";
 import { getScoutSignal } from "@/lib/scout-signals";
+import { CreatorAvatar } from "./CreatorAvatar";
 
 interface BiggestMoversProps {
   movers: LeaderboardCreator[];
@@ -217,17 +218,20 @@ export function BiggestMovers({
                   </div>
                 </div>
 
-                {/* Middle: Creator Name & Inline CT Badge */}
+                {/* Middle: Creator Avatar + Name & Inline CT Badge */}
                 <div className="z-10 my-1">
-                  <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
-                    <span className="text-sm sm:text-xl font-bold text-white group-hover:text-zinc-200 transition truncate max-w-full">
-                      {creator.name}
-                    </span>
-                    {isCT && (
-                      <span className="px-1 py-0.2 rounded text-[8px] sm:text-[10px] font-mono bg-purple-500/15 text-purple-300 border border-purple-500/30 shrink-0">
-                        CT
+                  <div className="flex items-center gap-2">
+                    <CreatorAvatar creator={creator} className="w-8 h-8 sm:w-9 sm:h-9" />
+                    <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap truncate">
+                      <span className="text-sm sm:text-xl font-bold text-white group-hover:text-zinc-200 transition truncate max-w-full">
+                        {creator.name}
                       </span>
-                    )}
+                      {isCT && (
+                        <span className="px-1 py-0.2 rounded text-[8px] sm:text-[10px] font-mono bg-purple-500/15 text-purple-300 border border-purple-500/30 shrink-0">
+                          CT
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -324,8 +328,9 @@ export function BiggestMovers({
                   </div>
                 </div>
 
-                {/* Middle: Creator Name & CT Badge */}
-                <div className="flex items-center gap-1 z-10 truncate my-0.5">
+                {/* Middle: Creator Avatar + Name & CT Badge */}
+                <div className="flex items-center gap-1.5 z-10 truncate my-0.5">
+                  <CreatorAvatar creator={creator} className="w-6 h-6 sm:w-7 sm:h-7" />
                   <span className="text-xs sm:text-sm font-semibold text-white group-hover:text-zinc-200 transition truncate">
                     {creator.name}
                   </span>

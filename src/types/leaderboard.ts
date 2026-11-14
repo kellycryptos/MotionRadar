@@ -4,6 +4,8 @@ export interface LeaderboardCreator {
   position: number;
   delta: number;
   isNew: boolean;
+  handle?: string;
+  xUrl?: string;
 }
 
 export interface LeaderboardResponse {

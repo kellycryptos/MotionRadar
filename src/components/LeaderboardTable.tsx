@@ -6,6 +6,7 @@ import { LeaderboardCreator } from "@/types/leaderboard";
 import { isCryptoCreator, getCryptoCreatorInfo } from "@/lib/crypto-creators";
 import { getScoutSignal } from "@/lib/scout-signals";
 import { SortOption } from "./LeaderboardControls";
+import { CreatorAvatar } from "./CreatorAvatar";
 
 interface LeaderboardTableProps {
   creators: LeaderboardCreator[];
@@ -15,27 +16,6 @@ interface LeaderboardTableProps {
   lineupIds?: Set<string>;
   onToggleLineup?: (creator: LeaderboardCreator) => void;
   isLineupFull?: boolean;
-}
-
-function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
-function getAvatarGradient(name: string): string {
-  const gradients = [
-    "from-zinc-700 to-zinc-900",
-    "from-slate-700 to-slate-900",
-    "from-neutral-700 to-neutral-900",
-    "from-stone-700 to-stone-900",
-    "from-zinc-800 to-neutral-950",
-  ];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return gradients[Math.abs(hash) % gradients.length];
 }
 
 export function LeaderboardTable({
@@ -187,13 +167,7 @@ export function LeaderboardTable({
                   <td className="py-0 px-2.5 sm:px-4 align-middle">
                     <div className="flex items-center gap-2 max-w-xl">
                       {/* 28px Circular Avatar */}
-                      <div
-                        className={`w-7 h-7 rounded-full bg-gradient-to-br ${getAvatarGradient(
-                          creator.name
-                        )} border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-200 shrink-0 font-mono`}
-                      >
-                        {getInitials(creator.name)}
-                      </div>
+                      <CreatorAvatar creator={creator} />
 
                       {/* Name and Inline Badges */}
                       <div className="flex items-center gap-1.5 truncate min-w-0">

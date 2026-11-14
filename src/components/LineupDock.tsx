@@ -8,6 +8,7 @@ import {
   generateLineupShareTweet,
   getScoutSignal,
 } from "@/lib/scout-signals";
+import { CreatorAvatar } from "./CreatorAvatar";
 
 interface LineupDockProps {
   lineup: LeaderboardCreator[];
@@ -104,11 +105,12 @@ export function LineupDock({
                 className="h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg bg-[#18181C] border border-white/[0.1] flex items-center justify-between gap-1 text-[11px] sm:text-xs text-zinc-100 shadow-sm"
               >
                 <div className="flex items-center gap-1 sm:gap-1.5 truncate">
+                  <CreatorAvatar creator={creator} className="w-4 h-4 sm:w-5 sm:h-5 text-[8px]" />
                   <span className="font-mono text-[9px] sm:text-[10px] text-zinc-500 shrink-0">
                     #{creator.position}
                   </span>
                   <span
-                    className="truncate font-medium max-w-[65px] sm:max-w-[80px]"
+                    className="truncate font-medium max-w-[55px] sm:max-w-[75px]"
                     title={`${creator.name} ${signal ? `(${signal.badge})` : ""}`}
                   >
                     {creator.name.split(" ")[0]}
