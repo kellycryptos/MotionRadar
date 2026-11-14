@@ -1,13 +1,16 @@
 "use client";
 
 import React from "react";
-import { Zap } from "lucide-react";
+import { Zap, Plus, Check } from "lucide-react";
 import { LeaderboardCreator } from "@/types/leaderboard";
 import { isCryptoCreator } from "@/lib/crypto-creators";
+import { getScoutSignal } from "@/lib/scout-signals";
 
 interface BiggestMoversProps {
   movers: LeaderboardCreator[];
   onSelectCreator: (name: string) => void;
+  lineupIds?: Set<string>;
+  onToggleLineup?: (creator: LeaderboardCreator) => void;
 }
 
 function MoverSparkline({
@@ -85,7 +88,12 @@ function MoverSparkline({
   );
 }
 
-export function BiggestMovers({ movers, onSelectCreator }: BiggestMoversProps) {
+export function BiggestMovers({
+  movers,
+  onSelectCreator,
+  lineupIds = new Set(),
+  onToggleLineup,
+}: BiggestMoversProps) {
   if (movers.length === 0) return null;
 
   // Separate top gainer & top drop for hero cards
@@ -126,30 +134,73 @@ export function BiggestMovers({ movers, onSelectCreator }: BiggestMoversProps) {
             const isUp = creator.delta > 0;
             const isDown = creator.delta < 0;
             const isCT = isCryptoCreator(creator.name);
+            const signal = getScoutSignal(creator);
             const prevPosition = creator.position + creator.delta;
+            const isInLineup = lineupIds.has(creator.id);
 
             return (
               <div
                 key={creator.id}
                 onClick={() => onSelectCreator(creator.name)}
-                className="group relative bg-[#121215] border border-white/[0.07] hover:border-white/[0.15] rounded-2xl p-5 flex flex-col justify-between h-[180px] sm:h-[195px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition cursor-pointer overflow-hidden"
+                className={`group relative bg-[#121215] border rounded-2xl p-5 flex flex-col justify-between h-[185px] sm:h-[195px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition cursor-pointer overflow-hidden ${
+                  isInLineup
+                    ? "border-emerald-500/40 bg-emerald-500/[0.03]"
+                    : "border-white/[0.07] hover:border-white/[0.15]"
+                }`}
               >
-                {/* Top Row: Rank & Delta Badge */}
+                {/* Top Row: Rank & Delta Badge + Pick Button */}
                 <div className="flex items-center justify-between z-10">
-                  <span className="font-mono text-xs text-zinc-500">
-                    #{creator.position}
-                  </span>
-                  <span
-                    className={`px-2 py-0.5 rounded-md text-xs font-mono font-bold ${
-                      isUp
-                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                        : isDown
-                        ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
-                        : "bg-white/[0.05] text-zinc-400"
-                    }`}
-                  >
-                    {isUp ? `+${creator.delta}` : creator.delta}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs text-zinc-500">
+                      #{creator.position}
+                    </span>
+                    {signal && (
+                      <span
+                        title={signal.thesis}
+                        className={`inline-flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.2 rounded border ${signal.tagColor}`}
+                      >
+                        <span>{signal.emoji}</span>
+                        <span>{signal.badge}</span>
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={`px-2 py-0.5 rounded-md text-xs font-mono font-bold ${
+                        isUp
+                          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                          : isDown
+                          ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                          : "bg-white/[0.05] text-zinc-400"
+                      }`}
+                    >
+                      {isUp ? `+${creator.delta}` : creator.delta}
+                    </span>
+
+                    {onToggleLineup && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleLineup(creator);
+                        }}
+                        title={
+                          isInLineup ? "Remove from Lineup" : "Add to Lineup"
+                        }
+                        className={`w-6 h-6 rounded-md flex items-center justify-center text-xs transition border ${
+                          isInLineup
+                            ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                            : "bg-white/[0.05] text-zinc-400 border-white/[0.08] hover:text-white hover:bg-white/[0.1]"
+                        }`}
+                      >
+                        {isInLineup ? (
+                          <Check className="w-3 h-3" />
+                        ) : (
+                          <Plus className="w-3 h-3" />
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Middle: Creator Name & Inline CT Badge */}
@@ -184,26 +235,73 @@ export function BiggestMovers({ movers, onSelectCreator }: BiggestMoversProps) {
             const isUp = creator.delta > 0;
             const isDown = creator.delta < 0;
             const isCT = isCryptoCreator(creator.name);
+            const signal = getScoutSignal(creator);
             const prevPosition = creator.position + creator.delta;
+            const isInLineup = lineupIds.has(creator.id);
 
             return (
               <div
                 key={creator.id}
                 onClick={() => onSelectCreator(creator.name)}
-                className="group relative bg-[#121215] border border-white/[0.07] hover:border-white/[0.15] rounded-2xl p-4 flex flex-col justify-between h-[85px] sm:h-[92px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition cursor-pointer overflow-hidden"
+                className={`group relative bg-[#121215] border rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between h-[88px] sm:h-[94px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition cursor-pointer overflow-hidden ${
+                  isInLineup
+                    ? "border-emerald-500/40 bg-emerald-500/[0.03]"
+                    : "border-white/[0.07] hover:border-white/[0.15]"
+                }`}
               >
                 {/* Top Row: Rank & Delta */}
                 <div className="flex items-center justify-between z-10">
-                  <span className="font-mono text-xs text-zinc-500">
-                    #{creator.position}
-                  </span>
-                  <span
-                    className={`font-mono text-xs font-bold ${
-                      isUp ? "text-emerald-400" : isDown ? "text-rose-400" : "text-zinc-400"
-                    }`}
-                  >
-                    {isUp ? `+${creator.delta}` : creator.delta}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono text-xs text-zinc-500">
+                      #{creator.position}
+                    </span>
+                    {signal && (
+                      <span
+                        title={signal.thesis}
+                        className={`inline-flex items-center gap-0.5 text-[8px] font-mono px-1 py-0.2 rounded border ${signal.tagColor}`}
+                      >
+                        <span>{signal.emoji}</span>
+                        <span>{signal.badge}</span>
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={`font-mono text-xs font-bold ${
+                        isUp
+                          ? "text-emerald-400"
+                          : isDown
+                          ? "text-rose-400"
+                          : "text-zinc-400"
+                      }`}
+                    >
+                      {isUp ? `+${creator.delta}` : creator.delta}
+                    </span>
+
+                    {onToggleLineup && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleLineup(creator);
+                        }}
+                        title={
+                          isInLineup ? "Remove from Lineup" : "Add to Lineup"
+                        }
+                        className={`w-5 h-5 rounded flex items-center justify-center text-xs transition border ${
+                          isInLineup
+                            ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                            : "bg-white/[0.05] text-zinc-400 border-white/[0.08] hover:text-white hover:bg-white/[0.1]"
+                        }`}
+                      >
+                        {isInLineup ? (
+                          <Check className="w-2.5 h-2.5" />
+                        ) : (
+                          <Plus className="w-2.5 h-2.5" />
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Middle: Creator Name & CT Badge */}

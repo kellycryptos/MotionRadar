@@ -79,10 +79,28 @@ A high-contrast card grid featuring the creators with the largest rank shifts in
 ### Curated Crypto Twitter (CT) Hub
 A dedicated view for the Web3 and CT creator sphere, pre-indexing leaders such as Vitalik Buterin, Anatoly Yakovenko (Toly), Cobie, Ansem, Threadguy, and Clemente.
 
+### Weekly 5-Creator Lineup Builder & Viral X Share
+Players draft a 5-person roster each week in Motion. MotionRadar includes an interactive floating lineup dock:
+- **Real-Time Lineup Draft**: Add/remove any creator with 1 click from the leaderboard table or Biggest Movers deck.
+- **Combined Momentum Score**: Real-time summation of net velocity ($\sum \Delta$) across your 5 drafted picks.
+- **1-Click Share to X**: Instantly opens a pre-formatted viral scouting breakdown tagging `@callmogbot`, `#Motion`, and `#Mogathon`.
+- **Instant Auto-Draft Presets**: 1-click auto-drafts the top 5 velocity gainers or top 5 Crypto/CT stars.
+
+### Analytical Scout Signals
+Provides actionable scouting theses beyond raw numbers:
+- **🚀 Breakout Velocity**: Creators moving $\ge +3$ spots with rapid attention rotation.
+- **📉 Oversold Dip**: High-conviction creators undergoing temporary rank drops (contrarian rebound targets).
+- **⚡ CT Momentum**: Crypto-native creators riding active Web3 / CT mindshare.
+- **💎 CT Discount**: Top crypto builders trading at a relative rank discount.
+- **🛡️ Blue Chip**: Top-5 cultural juggernauts anchoring the leaderboard.
+- **👀 Hidden Gem**: Mid/lower-tier creators climbing quietly with $\ge +2$ delta.
+- **✨ New Catalyst**: Fresh entries into the leaderboard.
+
 ### Fast Scouting Presets
 - **CT Elite**: Isolates verified Crypto Twitter creators.
 - **$|\Delta| \ge 2$**: Filters out static positions to show creators undergoing notable movement.
 - **Top 10**: Focuses on the current leaderboard leaders.
+- **Contrarian Dips**: Surfaces oversold creators poised for rebound.
 
 ### Data Tools & Social Pulse
 - **Export to CSV**: Instant client-side download of the active, filtered dataset.

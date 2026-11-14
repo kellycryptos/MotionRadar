@@ -1,16 +1,18 @@
 "use client";
 
 import React from "react";
-import { Search, X, Download, ArrowUpDown } from "lucide-react";
+import { Search, X, ArrowUpDown } from "lucide-react";
 import { motion } from "framer-motion";
 
 export type FilterCategory =
   | "all"
+  | "signals"
   | "movers"
   | "gainers"
   | "losers"
   | "crypto"
   | "new";
+
 export type SortOption =
   | "rank-asc"
   | "rank-desc"
@@ -30,13 +32,14 @@ interface LeaderboardControlsProps {
   totalFiltered: number;
   totalRaw: number;
   onApplyPreset: (
-    preset: "all" | "ct-elite" | "top-10" | "high-volatility"
+    preset: "all" | "ct-elite" | "top-10" | "high-volatility" | "contrarian-dips"
   ) => void;
   activePreset: string | null;
 }
 
 const FILTER_TABS = [
   { id: "all", label: "All" },
+  { id: "signals", label: "Signals" },
   { id: "movers", label: "Movers" },
   { id: "gainers", label: "Gainers" },
   { id: "losers", label: "Drops" },
@@ -103,30 +106,29 @@ export function LeaderboardControls({
                 Biggest Drop (-Δ)
               </option>
               <option value="abs-delta-desc" className="bg-[#121215]">
-                Most Volatile (|Δ|)
+                Absolute Volatility (|Δ|)
               </option>
               <option value="name-asc" className="bg-[#121215]">
-                Name (A-Z)
+                Alphabetical (A-Z)
               </option>
             </select>
           </div>
 
           <button
             onClick={onExportCsv}
-            title="Export filtered leaderboard as CSV"
-            className="flex items-center gap-1.5 px-3 py-2 bg-[#121215] hover:bg-white/[0.04] border border-white/[0.08] rounded-xl text-xs font-medium text-zinc-300 transition shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]"
+            className="flex items-center gap-1.5 px-3 py-2 bg-[#121215] hover:bg-white/[0.06] border border-white/[0.08] rounded-xl text-xs font-mono text-zinc-300 transition shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]"
+            title="Download visible creators as CSV"
           >
-            <Download className="w-3.5 h-3.5 text-zinc-400" />
             <span>CSV</span>
           </button>
         </div>
       </div>
 
-      {/* Filter Bar: Segmented Pill Track with Inline Presets */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center bg-[#121215] p-1 rounded-xl border border-white/[0.07] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]">
-          {/* Segmented Category Pills */}
-          <div className="flex items-center gap-0.5">
+      {/* Bottom Bar: Categorical Filter Tabs + Quick Presets + Counter */}
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 pt-1">
+        <div className="flex items-center gap-1 overflow-x-auto max-w-full pb-1 lg:pb-0 scrollbar-none">
+          {/* Main Filter Tabs */}
+          <div className="flex items-center bg-[#121215] border border-white/[0.08] p-1 rounded-xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]">
             {FILTER_TABS.map((tab) => {
               const isActive = selectedFilter === tab.id;
               return (
@@ -151,10 +153,10 @@ export function LeaderboardControls({
           </div>
 
           {/* Divider between Filter Tabs and Presets */}
-          <div className="h-4 w-[1px] bg-white/10 mx-2" />
+          <div className="h-4 w-[1px] bg-white/10 mx-2 shrink-0" />
 
           {/* Inline Preset Chips */}
-          <div className="flex items-center gap-1 text-[11px] font-mono">
+          <div className="flex items-center gap-1 text-[11px] font-mono shrink-0">
             <button
               onClick={() => onApplyPreset("ct-elite")}
               className={`px-2.5 py-1 rounded-lg border transition ${
@@ -185,11 +187,21 @@ export function LeaderboardControls({
             >
               Top 10
             </button>
+            <button
+              onClick={() => onApplyPreset("contrarian-dips")}
+              className={`px-2.5 py-1 rounded-lg border transition ${
+                activePreset === "contrarian-dips"
+                  ? "bg-white/10 text-white border-white/20 font-semibold"
+                  : "border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04]"
+              }`}
+            >
+              Contrarian Dips
+            </button>
           </div>
         </div>
 
         {/* Total Count Indicator */}
-        <div className="text-xs text-zinc-500 font-mono">
+        <div className="text-xs text-zinc-500 font-mono shrink-0">
           Showing {totalFiltered} of {totalRaw} creators
         </div>
       </div>

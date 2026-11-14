@@ -25,3 +25,24 @@ export interface LeaderboardStats {
   topLoser: LeaderboardCreator | null;
   avgAbsoluteDelta: number;
 }
+
+export type ScoutSignalType =
+  | "breakout"
+  | "oversold"
+  | "ct-momentum"
+  | "ct-value"
+  | "blue-chip"
+  | "hidden-mover"
+  | "new-catalyst";
+
+export interface ScoutSignal {
+  type: ScoutSignalType;
+  label: string;
+  badge: string;
+  emoji: string;
+  tagColor: string;
+  textColor: string;
+  borderColor: string;
+  bgColor: string;
+  thesis: string;
+}

@@ -1,9 +1,10 @@
 "use client";
 
 import React from "react";
-import { ArrowUp, ArrowDown, ExternalLink, Sparkles } from "lucide-react";
+import { ArrowUp, ArrowDown, ExternalLink, Sparkles, Plus, Check } from "lucide-react";
 import { LeaderboardCreator } from "@/types/leaderboard";
 import { isCryptoCreator, getCryptoCreatorInfo } from "@/lib/crypto-creators";
+import { getScoutSignal } from "@/lib/scout-signals";
 import { SortOption } from "./LeaderboardControls";
 
 interface LeaderboardTableProps {
@@ -11,6 +12,8 @@ interface LeaderboardTableProps {
   sortOption: SortOption;
   onSortChange: (sort: SortOption) => void;
   onSelectCreator: (name: string) => void;
+  lineupIds?: Set<string>;
+  onToggleLineup?: (creator: LeaderboardCreator) => void;
 }
 
 function getInitials(name: string): string {
@@ -39,6 +42,8 @@ export function LeaderboardTable({
   sortOption,
   onSortChange,
   onSelectCreator,
+  lineupIds = new Set(),
+  onToggleLineup,
 }: LeaderboardTableProps) {
   if (creators.length === 0) {
     return (
@@ -70,9 +75,14 @@ export function LeaderboardTable({
           {/* Sticky Table Header */}
           <thead className="sticky top-0 z-10 bg-[#09090B]/90 backdrop-blur-md border-b border-white/[0.08]">
             <tr className="h-10 text-[11px] font-medium tracking-wider uppercase text-zinc-500 font-mono">
+              {/* Draft / Lineup Pick Column */}
+              <th className="py-0 px-3 w-10 text-center align-middle font-semibold" title="Draft to 5-Creator Lineup">
+                Pick
+              </th>
+
               <th
                 onClick={handleRankHeaderClick}
-                className="py-0 px-4 font-semibold cursor-pointer hover:text-zinc-200 transition w-20 align-middle"
+                className="py-0 px-3 font-semibold cursor-pointer hover:text-zinc-200 transition w-16 align-middle"
               >
                 <div className="flex items-center gap-1">
                   <span>Rank</span>
@@ -90,7 +100,7 @@ export function LeaderboardTable({
                 className="py-0 px-4 font-semibold cursor-pointer hover:text-zinc-200 transition align-middle"
               >
                 <div className="flex items-center gap-1">
-                  <span>Creator</span>
+                  <span>Creator & Scout Signal</span>
                   {sortOption === "name-asc" && (
                     <span className="text-emerald-400">↑</span>
                   )}
@@ -112,11 +122,11 @@ export function LeaderboardTable({
                 </div>
               </th>
 
-              <th className="py-0 px-4 font-semibold text-right w-28 hidden sm:table-cell align-middle">
+              <th className="py-0 px-4 font-semibold text-right w-24 hidden sm:table-cell align-middle">
                 Previous
               </th>
 
-              <th className="py-0 px-4 font-semibold text-right w-32 hidden md:table-cell align-middle">
+              <th className="py-0 px-4 font-semibold text-right w-28 hidden md:table-cell align-middle">
                 Category
               </th>
             </tr>
@@ -127,10 +137,11 @@ export function LeaderboardTable({
             {creators.map((creator) => {
               const isUp = creator.delta > 0;
               const isDown = creator.delta < 0;
-              const isNeutral = creator.delta === 0;
               const prevPos = creator.position + creator.delta;
               const isCT = isCryptoCreator(creator.name);
               const ctInfo = getCryptoCreatorInfo(creator.name);
+              const signal = getScoutSignal(creator);
+              const isInLineup = lineupIds.has(creator.id);
 
               const isTop1 = creator.position === 1;
               const isTop2 = creator.position === 2;
@@ -139,10 +150,38 @@ export function LeaderboardTable({
               return (
                 <tr
                   key={creator.id}
-                  className="h-[52px] hover:bg-white/[0.03] transition-colors group"
+                  className={`h-[52px] hover:bg-white/[0.03] transition-colors group ${
+                    isInLineup ? "bg-emerald-500/[0.04]" : ""
+                  }`}
                 >
+                  {/* Pick / Draft Button */}
+                  <td className="py-0 px-3 text-center align-middle">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleLineup?.(creator);
+                      }}
+                      title={
+                        isInLineup
+                          ? `Remove ${creator.name} from lineup`
+                          : `Draft ${creator.name} to 5-creator lineup`
+                      }
+                      className={`w-6 h-6 rounded-lg flex items-center justify-center transition border ${
+                        isInLineup
+                          ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/40"
+                          : "bg-white/[0.04] text-zinc-500 border-white/[0.08] hover:bg-white/[0.1] hover:text-white hover:border-white/20"
+                      }`}
+                    >
+                      {isInLineup ? (
+                        <Check className="w-3.5 h-3.5" />
+                      ) : (
+                        <Plus className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </td>
+
                   {/* Rank Column */}
-                  <td className="py-0 px-4 font-mono font-medium align-middle">
+                  <td className="py-0 px-3 font-mono font-medium align-middle">
                     <div className="flex items-center">
                       {isTop1 ? (
                         <span className="bg-amber-500/10 text-amber-300 border border-amber-500/20 px-2 py-0.5 rounded text-xs font-mono font-bold">
@@ -157,17 +196,17 @@ export function LeaderboardTable({
                           #3
                         </span>
                       ) : (
-                        <span className="text-xs font-mono text-zinc-400 px-2 py-0.5">
+                        <span className="text-xs font-mono text-zinc-400 px-1 py-0.5">
                           #{creator.position}
                         </span>
                       )}
                     </div>
                   </td>
 
-                  {/* Creator Column: 28px Avatar + Name + Inline CT & Bio */}
+                  {/* Creator Column: Avatar + Name + Scout Signal + Badges */}
                   <td className="py-0 px-4 align-middle">
                     <div className="flex items-center gap-2.5 max-w-xl">
-                      {/* 28px Circular Avatar */}
+                      {/* Circular Avatar */}
                       <div
                         className={`w-7 h-7 rounded-full bg-gradient-to-br ${getAvatarGradient(
                           creator.name
@@ -176,14 +215,25 @@ export function LeaderboardTable({
                         {getInitials(creator.name)}
                       </div>
 
-                      {/* Name and Inline Badges/Subtitles */}
-                      <div className="flex items-center gap-2 truncate min-w-0">
+                      {/* Name and Inline Badges */}
+                      <div className="flex items-center gap-1.5 sm:gap-2 truncate min-w-0">
                         <button
                           onClick={() => onSelectCreator(creator.name)}
                           className="font-medium text-white group-hover:text-zinc-200 transition text-left truncate shrink-0"
                         >
                           {creator.name}
                         </button>
+
+                        {/* Scout Signal Tag */}
+                        {signal && (
+                          <span
+                            title={signal.thesis}
+                            className={`inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-mono border ${signal.tagColor} shrink-0 cursor-help`}
+                          >
+                            <span>{signal.emoji}</span>
+                            <span className="hidden sm:inline">{signal.badge}</span>
+                          </span>
+                        )}
 
                         {creator.isNew && (
                           <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/20 shrink-0">
@@ -201,20 +251,13 @@ export function LeaderboardTable({
                           </span>
                         )}
 
-                        {/* Bio Subtitle inline on same line to preserve 52px height */}
-                        {ctInfo?.tag && (
-                          <span className="text-xs text-zinc-500 truncate hidden lg:inline">
-                            · {ctInfo.tag}
-                          </span>
-                        )}
-
                         {ctInfo?.handle && (
                           <a
                             href={`https://x.com/${ctInfo.handle}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             title={`@${ctInfo.handle} on X`}
-                            className="text-zinc-600 hover:text-zinc-400 transition shrink-0 ml-1"
+                            className="text-zinc-600 hover:text-zinc-400 transition shrink-0 ml-0.5"
                           >
                             <ExternalLink className="w-3 h-3" />
                           </a>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useTransition } from "react";
+import React, { useState, useMemo, useTransition, useEffect } from "react";
 import { Header } from "./Header";
 import { StatSummary } from "./StatSummary";
 import { BiggestMovers } from "./BiggestMovers";
@@ -12,12 +12,14 @@ import {
 import { LeaderboardTable } from "./LeaderboardTable";
 import { AboutSection } from "./AboutSection";
 import { MogathonModal } from "./MogathonModal";
+import { LineupDock } from "./LineupDock";
 import {
   LeaderboardCreator,
   LeaderboardResponse,
   LeaderboardStats,
 } from "@/types/leaderboard";
 import { isCryptoCreator } from "@/lib/crypto-creators";
+import { getScoutSignal } from "@/lib/scout-signals";
 import {
   computeLeaderboardStats,
   getBiggestMovers,
@@ -48,6 +50,43 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
   const [activePreset, setActivePreset] = useState<string | null>(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  // 5-Creator Lineup state with localStorage persistence
+  const [lineup, setLineup] = useState<LeaderboardCreator[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("motion_radar_lineup");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) return parsed.slice(0, 5);
+        }
+      } catch {
+        // fallback to empty
+      }
+    }
+    return [];
+  });
+
+  // Sync lineup to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("motion_radar_lineup", JSON.stringify(lineup));
+    } catch {
+      // ignore
+    }
+  }, [lineup]);
+
+  // Keep lineup data up-to-date if master data refreshes
+  useEffect(() => {
+    setLineup((prev) =>
+      prev.map((item) => {
+        const updated = data.rows.find((r) => r.id === item.id);
+        return updated || item;
+      })
+    );
+  }, [data.rows]);
+
+  const lineupIds = useMemo(() => new Set(lineup.map((c) => c.id)), [lineup]);
 
   // Dynamic refresh function
   const handleRefresh = async () => {
@@ -92,10 +131,16 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
       list = list.filter((r) => r.position <= 10);
     } else if (activePreset === "high-volatility") {
       list = list.filter((r) => Math.abs(r.delta) >= 2);
+    } else if (activePreset === "contrarian-dips") {
+      list = list.filter(
+        (r) => r.delta < 0 && (r.position <= 40 || r.delta <= -2)
+      );
     }
 
     // Filter by Tab
-    if (selectedFilter === "movers") {
+    if (selectedFilter === "signals") {
+      list = list.filter((r) => getScoutSignal(r) !== null);
+    } else if (selectedFilter === "movers") {
       list = list.filter((r) => Math.abs(r.delta) > 0);
     } else if (selectedFilter === "gainers") {
       list = list.filter((r) => r.delta > 0);
@@ -138,13 +183,23 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
 
   // Preset Handler
   const handleApplyPreset = (
-    preset: "all" | "ct-elite" | "top-10" | "high-volatility"
+    preset:
+      | "all"
+      | "ct-elite"
+      | "top-10"
+      | "high-volatility"
+      | "contrarian-dips"
   ) => {
     if (preset === "all") {
       setActivePreset(null);
       setSelectedFilter("all");
       setSearchQuery("");
       setSortOption("rank-asc");
+    } else if (preset === "contrarian-dips") {
+      setActivePreset(preset);
+      setSelectedFilter("all");
+      setSearchQuery("");
+      setSortOption("delta-asc");
     } else {
       setActivePreset(preset);
       setSelectedFilter("all");
@@ -161,17 +216,61 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
   const handleScrollToMovers = () => {
     setSelectedFilter("movers");
     setActivePreset(null);
-    document.getElementById("leaderboard-section")?.scrollIntoView({ behavior: "smooth" });
+    document
+      .getElementById("leaderboard-section")
+      ?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleScrollToCrypto = () => {
     setActivePreset("ct-elite");
     setSelectedFilter("all");
-    document.getElementById("leaderboard-section")?.scrollIntoView({ behavior: "smooth" });
+    document
+      .getElementById("leaderboard-section")
+      ?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleExportCsv = () => {
     exportLeaderboardToCsv(filteredCreators);
+  };
+
+  // Lineup interaction handlers
+  const handleToggleLineup = (creator: LeaderboardCreator) => {
+    setLineup((prev) => {
+      const exists = prev.some((c) => c.id === creator.id);
+      if (exists) {
+        return prev.filter((c) => c.id !== creator.id);
+      }
+      if (prev.length >= 5) {
+        // Lineup full - replace last pick or keep at 5
+        return prev;
+      }
+      return [...prev, creator];
+    });
+  };
+
+  const handleRemoveFromLineup = (creatorId: string) => {
+    setLineup((prev) => prev.filter((c) => c.id !== creatorId));
+  };
+
+  const handleClearLineup = () => {
+    setLineup([]);
+  };
+
+  const handleAutoDraftMovers = () => {
+    const gainers = [...data.rows]
+      .filter((c) => c.delta > 0)
+      .sort((a, b) => b.delta - a.delta);
+    setLineup(gainers.slice(0, 5));
+  };
+
+  const handleAutoDraftCrypto = () => {
+    const ctList = [...data.rows]
+      .filter((c) => isCryptoCreator(c.name))
+      .sort((a, b) => {
+        if (b.delta !== a.delta) return b.delta - a.delta;
+        return a.position - b.position;
+      });
+    setLineup(ctList.slice(0, 5));
   };
 
   return (
@@ -186,7 +285,11 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-6">
+      <main
+        className={`flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-6 ${
+          lineup.length > 0 ? "pb-44 sm:pb-48" : "pb-12"
+        }`}
+      >
         {/* Fallback Banner if API was unreachable */}
         {!isLive && (
           <div className="flex items-center gap-2.5 px-4 py-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-200">
@@ -208,10 +311,11 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
           </div>
         )}
 
-        {/* Consolidated Subtitle (H1 removed to match design specs) */}
+        {/* Consolidated Subtitle */}
         <div className="-mt-1">
           <p className="text-xs sm:text-sm text-zinc-400">
-            Live cultural attention & momentum tracker for the Motion game leaderboard.
+            Live cultural attention & momentum tracker for the Motion game
+            leaderboard.
           </p>
         </div>
 
@@ -219,7 +323,12 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
         <StatSummary stats={stats} onSelectCreator={handleSelectCreator} />
 
         {/* Asymmetric Bento Grid for Biggest Movers */}
-        <BiggestMovers movers={topMovers} onSelectCreator={handleSelectCreator} />
+        <BiggestMovers
+          movers={topMovers}
+          onSelectCreator={handleSelectCreator}
+          lineupIds={lineupIds}
+          onToggleLineup={handleToggleLineup}
+        />
 
         {/* Unified Filter & Control Toolbar + High-Density Table */}
         <section id="leaderboard-section" className="space-y-4 pt-1">
@@ -248,6 +357,8 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
             sortOption={sortOption}
             onSortChange={setSortOption}
             onSelectCreator={handleSelectCreator}
+            lineupIds={lineupIds}
+            onToggleLineup={handleToggleLineup}
           />
         </section>
 
@@ -257,6 +368,15 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
           onFilterCrypto={handleScrollToCrypto}
         />
       </main>
+
+      {/* Floating 5-Creator Lineup Dock */}
+      <LineupDock
+        lineup={lineup}
+        onRemoveFromLineup={handleRemoveFromLineup}
+        onClearLineup={handleClearLineup}
+        onAutoDraftMovers={handleAutoDraftMovers}
+        onAutoDraftCrypto={handleAutoDraftCrypto}
+      />
 
       {/* Bottom Footer Bar */}
       <footer className="border-t border-white/[0.06] pt-6 pb-8 text-xs text-zinc-500 bg-[#09090B]">
