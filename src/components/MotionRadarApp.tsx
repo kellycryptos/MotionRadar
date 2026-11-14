@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useTransition, useEffect } from "react";
+import Link from "next/link";
 import { Header } from "./Header";
 import { StatSummary } from "./StatSummary";
 import { BiggestMovers } from "./BiggestMovers";
@@ -26,7 +27,7 @@ import {
   FetchResult,
 } from "@/lib/api";
 import { exportLeaderboardToCsv } from "@/lib/utils";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, BookOpen } from "lucide-react";
 
 interface MotionRadarAppProps {
   initialResult: FetchResult;
@@ -300,12 +301,19 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
           </div>
         )}
 
-        {/* Subtitle */}
-        <div className="-mt-1">
+        {/* Subtitle + How it Works link */}
+        <div className="-mt-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <p className="text-xs sm:text-sm text-zinc-400">
             Live cultural attention & momentum tracker for the Motion game
             leaderboard.
           </p>
+          <Link
+            href="/how-it-works"
+            className="inline-flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 font-medium transition-colors shrink-0"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>How Motion works</span>
+          </Link>
         </div>
 
         {/* Summary Stat Cards (Compact 2x2 Grid on Mobile, 4-Column on Desktop) */}
@@ -399,6 +407,13 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
                 @kellycryptos
               </a>
             </span>
+            <span>•</span>
+            <Link
+              href="/how-it-works"
+              className="text-zinc-400 hover:text-zinc-200 transition-colors"
+            >
+              How it works
+            </Link>
             <span>•</span>
             <a
               href="https://seats.motion.game"
