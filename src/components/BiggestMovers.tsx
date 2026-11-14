@@ -11,6 +11,7 @@ interface BiggestMoversProps {
   onSelectCreator: (name: string) => void;
   lineupIds?: Set<string>;
   onToggleLineup?: (creator: LeaderboardCreator) => void;
+  isLineupFull?: boolean;
 }
 
 function MoverSparkline({
@@ -93,6 +94,7 @@ export function BiggestMovers({
   onSelectCreator,
   lineupIds = new Set(),
   onToggleLineup,
+  isLineupFull = false,
 }: BiggestMoversProps) {
   if (movers.length === 0) return null;
 
@@ -144,7 +146,7 @@ export function BiggestMovers({
                 onClick={() => onSelectCreator(creator.name)}
                 className={`group relative bg-[#121215] border rounded-2xl p-5 flex flex-col justify-between h-[185px] sm:h-[195px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition cursor-pointer overflow-hidden ${
                   isInLineup
-                    ? "border-emerald-500/40 bg-emerald-500/[0.03]"
+                    ? "border-emerald-500/40 bg-emerald-500/[0.04] border-l-2 border-l-emerald-500"
                     : "border-white/[0.07] hover:border-white/[0.15]"
                 }`}
               >
@@ -157,7 +159,7 @@ export function BiggestMovers({
                     {signal && (
                       <span
                         title={signal.thesis}
-                        className={`inline-flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.2 rounded border ${signal.tagColor}`}
+                        className={`inline-flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.2 rounded ${signal.tagColor}`}
                       >
                         <span>{signal.emoji}</span>
                         <span>{signal.badge}</span>
@@ -184,19 +186,32 @@ export function BiggestMovers({
                           e.stopPropagation();
                           onToggleLineup(creator);
                         }}
+                        disabled={!isInLineup && isLineupFull}
                         title={
-                          isInLineup ? "Remove from Lineup" : "Add to Lineup"
-                        }
-                        className={`w-6 h-6 rounded-md flex items-center justify-center text-xs transition border ${
                           isInLineup
-                            ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
-                            : "bg-white/[0.05] text-zinc-400 border-white/[0.08] hover:text-white hover:bg-white/[0.1]"
+                            ? "Remove from Lineup"
+                            : isLineupFull
+                            ? "Lineup is full (5/5)"
+                            : "Draft to Lineup"
+                        }
+                        className={`inline-flex items-center gap-1 text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md transition border ${
+                          isInLineup
+                            ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/40"
+                            : isLineupFull
+                            ? "bg-white/[0.02] text-zinc-600 border-white/[0.04] opacity-40 cursor-not-allowed"
+                            : "bg-white/[0.05] text-zinc-300 border-white/[0.08] hover:text-white hover:bg-white/[0.1] hover:border-white/20 cursor-pointer"
                         }`}
                       >
                         {isInLineup ? (
-                          <Check className="w-3 h-3" />
+                          <>
+                            <Check className="w-3 h-3 text-emerald-400" />
+                            <span>In Lineup</span>
+                          </>
                         ) : (
-                          <Plus className="w-3 h-3" />
+                          <>
+                            <Plus className="w-3 h-3" />
+                            <span>Draft</span>
+                          </>
                         )}
                       </button>
                     )}
@@ -245,7 +260,7 @@ export function BiggestMovers({
                 onClick={() => onSelectCreator(creator.name)}
                 className={`group relative bg-[#121215] border rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between h-[88px] sm:h-[94px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition cursor-pointer overflow-hidden ${
                   isInLineup
-                    ? "border-emerald-500/40 bg-emerald-500/[0.03]"
+                    ? "border-emerald-500/40 bg-emerald-500/[0.04] border-l-2 border-l-emerald-500"
                     : "border-white/[0.07] hover:border-white/[0.15]"
                 }`}
               >
@@ -258,7 +273,7 @@ export function BiggestMovers({
                     {signal && (
                       <span
                         title={signal.thesis}
-                        className={`inline-flex items-center gap-0.5 text-[8px] font-mono px-1 py-0.2 rounded border ${signal.tagColor}`}
+                        className={`inline-flex items-center gap-0.5 text-[8px] font-mono px-1 py-0.2 rounded ${signal.tagColor}`}
                       >
                         <span>{signal.emoji}</span>
                         <span>{signal.badge}</span>
@@ -285,19 +300,32 @@ export function BiggestMovers({
                           e.stopPropagation();
                           onToggleLineup(creator);
                         }}
+                        disabled={!isInLineup && isLineupFull}
                         title={
-                          isInLineup ? "Remove from Lineup" : "Add to Lineup"
+                          isInLineup
+                            ? "Remove from Lineup"
+                            : isLineupFull
+                            ? "Lineup is full (5/5)"
+                            : "Draft to Lineup"
                         }
-                        className={`w-5 h-5 rounded flex items-center justify-center text-xs transition border ${
+                        className={`inline-flex items-center gap-0.5 text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded transition border ${
                           isInLineup
                             ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
-                            : "bg-white/[0.05] text-zinc-400 border-white/[0.08] hover:text-white hover:bg-white/[0.1]"
+                            : isLineupFull
+                            ? "bg-white/[0.02] text-zinc-600 border-white/[0.04] opacity-40 cursor-not-allowed"
+                            : "bg-white/[0.05] text-zinc-300 border-white/[0.08] hover:text-white hover:bg-white/[0.1] hover:border-white/20 cursor-pointer"
                         }`}
                       >
                         {isInLineup ? (
-                          <Check className="w-2.5 h-2.5" />
+                          <>
+                            <Check className="w-2.5 h-2.5 text-emerald-400" />
+                            <span>Drafted</span>
+                          </>
                         ) : (
-                          <Plus className="w-2.5 h-2.5" />
+                          <>
+                            <Plus className="w-2.5 h-2.5" />
+                            <span>Draft</span>
+                          </>
                         )}
                       </button>
                     )}

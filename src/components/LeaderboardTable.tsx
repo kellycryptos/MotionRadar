@@ -14,6 +14,7 @@ interface LeaderboardTableProps {
   onSelectCreator: (name: string) => void;
   lineupIds?: Set<string>;
   onToggleLineup?: (creator: LeaderboardCreator) => void;
+  isLineupFull?: boolean;
 }
 
 function getInitials(name: string): string {
@@ -44,6 +45,7 @@ export function LeaderboardTable({
   onSelectCreator,
   lineupIds = new Set(),
   onToggleLineup,
+  isLineupFull = false,
 }: LeaderboardTableProps) {
   if (creators.length === 0) {
     return (
@@ -75,14 +77,9 @@ export function LeaderboardTable({
           {/* Sticky Table Header */}
           <thead className="sticky top-0 z-10 bg-[#09090B]/90 backdrop-blur-md border-b border-white/[0.08]">
             <tr className="h-10 text-[11px] font-medium tracking-wider uppercase text-zinc-500 font-mono">
-              {/* Draft / Lineup Pick Column */}
-              <th className="py-0 px-3 w-10 text-center align-middle font-semibold" title="Draft to 5-Creator Lineup">
-                Pick
-              </th>
-
               <th
                 onClick={handleRankHeaderClick}
-                className="py-0 px-3 font-semibold cursor-pointer hover:text-zinc-200 transition w-16 align-middle"
+                className="py-0 px-4 font-semibold cursor-pointer hover:text-zinc-200 transition w-20 align-middle"
               >
                 <div className="flex items-center gap-1">
                   <span>Rank</span>
@@ -129,6 +126,11 @@ export function LeaderboardTable({
               <th className="py-0 px-4 font-semibold text-right w-28 hidden md:table-cell align-middle">
                 Category
               </th>
+
+              {/* Roster Draft Action Column on the far right */}
+              <th className="py-0 px-4 font-semibold text-right w-28 align-middle">
+                Lineup
+              </th>
             </tr>
           </thead>
 
@@ -142,6 +144,7 @@ export function LeaderboardTable({
               const ctInfo = getCryptoCreatorInfo(creator.name);
               const signal = getScoutSignal(creator);
               const isInLineup = lineupIds.has(creator.id);
+              const canDraft = !isInLineup && !isLineupFull;
 
               const isTop1 = creator.position === 1;
               const isTop2 = creator.position === 2;
@@ -151,37 +154,13 @@ export function LeaderboardTable({
                 <tr
                   key={creator.id}
                   className={`h-[52px] hover:bg-white/[0.03] transition-colors group ${
-                    isInLineup ? "bg-emerald-500/[0.04]" : ""
+                    isInLineup
+                      ? "bg-emerald-500/[0.04] border-l-2 border-l-emerald-500"
+                      : ""
                   }`}
                 >
-                  {/* Pick / Draft Button */}
-                  <td className="py-0 px-3 text-center align-middle">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleLineup?.(creator);
-                      }}
-                      title={
-                        isInLineup
-                          ? `Remove ${creator.name} from lineup`
-                          : `Draft ${creator.name} to 5-creator lineup`
-                      }
-                      className={`w-6 h-6 rounded-lg flex items-center justify-center transition border ${
-                        isInLineup
-                          ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/40"
-                          : "bg-white/[0.04] text-zinc-500 border-white/[0.08] hover:bg-white/[0.1] hover:text-white hover:border-white/20"
-                      }`}
-                    >
-                      {isInLineup ? (
-                        <Check className="w-3.5 h-3.5" />
-                      ) : (
-                        <Plus className="w-3.5 h-3.5" />
-                      )}
-                    </button>
-                  </td>
-
                   {/* Rank Column */}
-                  <td className="py-0 px-3 font-mono font-medium align-middle">
+                  <td className="py-0 px-4 font-mono font-medium align-middle">
                     <div className="flex items-center">
                       {isTop1 ? (
                         <span className="bg-amber-500/10 text-amber-300 border border-amber-500/20 px-2 py-0.5 rounded text-xs font-mono font-bold">
@@ -203,10 +182,10 @@ export function LeaderboardTable({
                     </div>
                   </td>
 
-                  {/* Creator Column: Avatar + Name + Scout Signal + Badges */}
+                  {/* Creator Column: Avatar + Name + Scout Signal Badge */}
                   <td className="py-0 px-4 align-middle">
                     <div className="flex items-center gap-2.5 max-w-xl">
-                      {/* Circular Avatar */}
+                      {/* 28px Circular Avatar */}
                       <div
                         className={`w-7 h-7 rounded-full bg-gradient-to-br ${getAvatarGradient(
                           creator.name
@@ -224,14 +203,16 @@ export function LeaderboardTable({
                           {creator.name}
                         </button>
 
-                        {/* Scout Signal Tag */}
+                        {/* Scout Signal Thesis Pill */}
                         {signal && (
                           <span
                             title={signal.thesis}
-                            className={`inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-mono border ${signal.tagColor} shrink-0 cursor-help`}
+                            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono shrink-0 cursor-help ${signal.tagColor}`}
                           >
                             <span>{signal.emoji}</span>
-                            <span className="hidden sm:inline">{signal.badge}</span>
+                            <span className="hidden sm:inline font-medium">
+                              {signal.badge}
+                            </span>
                           </span>
                         )}
 
@@ -298,6 +279,45 @@ export function LeaderboardTable({
                       <span className="text-purple-400">Crypto / CT</span>
                     ) : (
                       <span className="text-zinc-500">Culture</span>
+                    )}
+                  </td>
+
+                  {/* Sleek + Draft / ✓ In Lineup Toggle Button */}
+                  <td className="py-0 px-4 text-right align-middle">
+                    {onToggleLineup && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleLineup(creator);
+                        }}
+                        disabled={!isInLineup && isLineupFull}
+                        title={
+                          isInLineup
+                            ? `Remove ${creator.name} from lineup`
+                            : isLineupFull
+                            ? "Lineup is full (5/5 creators drafted)"
+                            : `Draft ${creator.name} to 5-creator lineup`
+                        }
+                        className={`inline-flex items-center justify-center gap-1 text-[11px] font-mono font-semibold px-2.5 py-1 rounded-lg border transition ${
+                          isInLineup
+                            ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/40"
+                            : isLineupFull
+                            ? "bg-white/[0.02] text-zinc-600 border-white/[0.04] cursor-not-allowed opacity-40"
+                            : "bg-white/[0.04] text-zinc-400 border-white/[0.08] hover:bg-white/[0.1] hover:text-white hover:border-white/20 cursor-pointer"
+                        }`}
+                      >
+                        {isInLineup ? (
+                          <>
+                            <Check className="w-3 h-3 text-emerald-400" />
+                            <span>In Lineup</span>
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="w-3 h-3" />
+                            <span>Draft</span>
+                          </>
+                        )}
+                      </button>
                     )}
                   </td>
                 </tr>

@@ -19,7 +19,7 @@ import {
   LeaderboardStats,
 } from "@/types/leaderboard";
 import { isCryptoCreator } from "@/lib/crypto-creators";
-import { getScoutSignal } from "@/lib/scout-signals";
+import { getScoutSignal, autoScoutBest5 } from "@/lib/scout-signals";
 import {
   computeLeaderboardStats,
   getBiggestMovers,
@@ -51,11 +51,11 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  // 5-Creator Lineup state with localStorage persistence
+  // 5-Creator Lineup state with localStorage persistence (motionradar_lineup)
   const [lineup, setLineup] = useState<LeaderboardCreator[]>(() => {
     if (typeof window !== "undefined") {
       try {
-        const saved = localStorage.getItem("motion_radar_lineup");
+        const saved = localStorage.getItem("motionradar_lineup");
         if (saved) {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed)) return parsed.slice(0, 5);
@@ -67,10 +67,10 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
     return [];
   });
 
-  // Sync lineup to localStorage
+  // Persist lineup to localStorage
   useEffect(() => {
     try {
-      localStorage.setItem("motion_radar_lineup", JSON.stringify(lineup));
+      localStorage.setItem("motionradar_lineup", JSON.stringify(lineup));
     } catch {
       // ignore
     }
@@ -87,6 +87,7 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
   }, [data.rows]);
 
   const lineupIds = useMemo(() => new Set(lineup.map((c) => c.id)), [lineup]);
+  const isLineupFull = lineup.length >= 5;
 
   // Dynamic refresh function
   const handleRefresh = async () => {
@@ -241,7 +242,6 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
         return prev.filter((c) => c.id !== creator.id);
       }
       if (prev.length >= 5) {
-        // Lineup full - replace last pick or keep at 5
         return prev;
       }
       return [...prev, creator];
@@ -256,21 +256,10 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
     setLineup([]);
   };
 
-  const handleAutoDraftMovers = () => {
-    const gainers = [...data.rows]
-      .filter((c) => c.delta > 0)
-      .sort((a, b) => b.delta - a.delta);
-    setLineup(gainers.slice(0, 5));
-  };
-
-  const handleAutoDraftCrypto = () => {
-    const ctList = [...data.rows]
-      .filter((c) => isCryptoCreator(c.name))
-      .sort((a, b) => {
-        if (b.delta !== a.delta) return b.delta - a.delta;
-        return a.position - b.position;
-      });
-    setLineup(ctList.slice(0, 5));
+  // Balanced auto-scout roster: 2 Gainers, 2 CT Movers, 1 Contrarian Dip
+  const handleAutoScout = () => {
+    const balanced = autoScoutBest5(data.rows);
+    setLineup(balanced);
   };
 
   return (
@@ -328,6 +317,7 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
           onSelectCreator={handleSelectCreator}
           lineupIds={lineupIds}
           onToggleLineup={handleToggleLineup}
+          isLineupFull={isLineupFull}
         />
 
         {/* Unified Filter & Control Toolbar + High-Density Table */}
@@ -359,6 +349,7 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
             onSelectCreator={handleSelectCreator}
             lineupIds={lineupIds}
             onToggleLineup={handleToggleLineup}
+            isLineupFull={isLineupFull}
           />
         </section>
 
@@ -372,10 +363,9 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
       {/* Floating 5-Creator Lineup Dock */}
       <LineupDock
         lineup={lineup}
-        onRemoveFromLineup={handleRemoveFromLineup}
-        onClearLineup={handleClearLineup}
-        onAutoDraftMovers={handleAutoDraftMovers}
-        onAutoDraftCrypto={handleAutoDraftCrypto}
+        onRemove={handleRemoveFromLineup}
+        onClear={handleClearLineup}
+        onAutoScout={handleAutoScout}
       />
 
       {/* Bottom Footer Bar */}

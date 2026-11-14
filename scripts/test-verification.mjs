@@ -5,6 +5,7 @@ import { computeLeaderboardStats, getBiggestMovers } from "../src/lib/api.ts";
 import {
   getScoutSignal,
   computeLineupNetDelta,
+  autoScoutBest5,
   generateLineupShareTweet,
 } from "../src/lib/scout-signals.ts";
 
@@ -66,11 +67,12 @@ for (let i = 0; i < movers.length - 1; i++) {
 }
 console.log("✔ Biggest movers ordering passed");
 
-// 5. Scout Signals Verification
+// 5. Automated Scout Signal Tags Verification
+// Condition 1: delta >= 3 => Breakout Velocity
 const breakoutCreator = {
-  id: "1",
-  name: "Breakout Star",
-  position: 10,
+  id: "c1",
+  name: "Top Mover",
+  position: 18,
   delta: 4,
   isNew: false,
 };
@@ -78,97 +80,115 @@ const breakoutSignal = getScoutSignal(breakoutCreator);
 assert.equal(
   breakoutSignal?.type,
   "breakout",
-  "Delta >= 3 should trigger Breakout Velocity"
+  "delta >= 3 should trigger Breakout Velocity"
 );
-assert.ok(breakoutSignal?.badge.includes("Breakout"));
+assert.equal(breakoutSignal?.badge, "Breakout Velocity");
+assert.equal(breakoutSignal?.emoji, "🔥");
 
-const ctMover = {
-  id: "2",
+// Condition 2: delta <= -3 and rank <= 50 => Contrarian Dip
+const contrarianCreator = {
+  id: "c2",
+  name: "Dip Creator",
+  position: 43,
+  delta: -4,
+  isNew: false,
+};
+const contrarianSignal = getScoutSignal(contrarianCreator);
+assert.equal(
+  contrarianSignal?.type,
+  "contrarian-dip",
+  "delta <= -3 and rank <= 50 should trigger Contrarian Dip"
+);
+assert.equal(contrarianSignal?.badge, "Contrarian Dip");
+assert.equal(contrarianSignal?.emoji, "🎯");
+
+// Condition 3: Crypto / CT and delta >= 1 => CT Momentum
+const ctCreator = {
+  id: "c3",
   name: "Vitalik Buterin",
-  position: 40,
+  position: 52,
   delta: 3,
   isNew: false,
 };
-const ctSignal = getScoutSignal(ctMover);
-assert.ok(
-  ctSignal !== null,
-  "Crypto creator with positive delta should get a signal"
-);
+const ctSignal = getScoutSignal(ctCreator);
+assert.ok(ctSignal !== null, "Vitalik should receive a valid signal");
 
-const oversoldCreator = {
-  id: "3",
-  name: "Dip Specimen",
-  position: 12,
-  delta: -3,
+const ctMover1 = {
+  id: "c4",
+  name: "Ansem",
+  position: 24,
+  delta: 1,
   isNew: false,
 };
-const oversoldSignal = getScoutSignal(oversoldCreator);
+const ctMoverSignal = getScoutSignal(ctMover1);
 assert.equal(
-  oversoldSignal?.type,
-  "oversold",
-  "Delta <= -3 should trigger Oversold Dip"
+  ctMoverSignal?.type,
+  "ct-momentum",
+  "CT creator with delta >= 1 should trigger CT Momentum"
 );
+assert.equal(ctMoverSignal?.badge, "CT Momentum");
+assert.equal(ctMoverSignal?.emoji, "⚡");
 
-const blueChip = {
-  id: "4",
+// Condition 4: rank <= 10 and delta === 0 => Bluechip Anchor
+const anchorCreator = {
+  id: "c5",
   name: "Druski",
   position: 1,
   delta: 0,
   isNew: false,
 };
-const blueChipSignal = getScoutSignal(blueChip);
+const anchorSignal = getScoutSignal(anchorCreator);
 assert.equal(
-  blueChipSignal?.type,
-  "blue-chip",
-  "Top 5 creator with non-negative delta should be Blue Chip"
+  anchorSignal?.type,
+  "bluechip-anchor",
+  "rank <= 10 and delta === 0 should trigger Bluechip Anchor"
+);
+assert.equal(anchorSignal?.badge, "Bluechip Anchor");
+assert.equal(anchorSignal?.emoji, "🛡️");
+
+console.log("✔ Scout Signals engine passed all 4 core thesis badge checks");
+
+// 6. Auto-Scout Best 5 (Balanced Lineup Algorithm)
+const autoRoster = autoScoutBest5(FALLBACK_LEADERBOARD.rows);
+assert.equal(autoRoster.length, 5, "Auto-scout must return exactly 5 creators");
+const uniqueIds = new Set(autoRoster.map((c) => c.id));
+assert.equal(uniqueIds.size, 5, "All 5 drafted creators must be unique");
+console.log(
+  `✔ Auto-Scout Best 5 balanced selection passed: ${autoRoster.map((c) => c.name).join(", ")}`
 );
 
-const newEntry = {
-  id: "5",
-  name: "Newcomer",
-  position: 50,
-  delta: 0,
-  isNew: true,
-};
-const newSignal = getScoutSignal(newEntry);
-assert.equal(
-  newSignal?.type,
-  "new-catalyst",
-  "isNew creator should trigger New Catalyst"
-);
-
-console.log("✔ Scout Signals engine passed all condition verifications");
-
-// 6. 5-Creator Lineup Builder & Viral Share Tweet Verification
-const sampleLineup = [
-  { id: "10", name: "Vitalik Buterin", position: 44, delta: 3, isNew: false },
-  { id: "11", name: "Coffeezilla", position: 42, delta: 3, isNew: false },
-  { id: "12", name: "Dave Portnoy", position: 8, delta: 2, isNew: false },
-  { id: "13", name: "Flood", position: 47, delta: 2, isNew: false },
-  { id: "14", name: "Druski", position: 1, delta: 0, isNew: false },
+// 7. Lineup Net Velocity & Pre-filled Share Tweet Format
+const testLineup = [
+  { id: "1", name: "Valkyrae", position: 18, delta: 4, isNew: false },
+  { id: "2", name: "Vitalik Buterin", position: 52, delta: 3, isNew: false },
+  { id: "3", name: "Bill Ackman", position: 38, delta: 2, isNew: false },
+  { id: "4", name: "Haseeb Qureshi", position: 67, delta: 2, isNew: false },
+  { id: "5", name: "Garry Tan", position: 43, delta: -4, isNew: false },
 ];
 
-const netDelta = computeLineupNetDelta(sampleLineup);
-assert.equal(netDelta, 10, "Net delta sum should equal 3 + 3 + 2 + 2 + 0 = 10");
+const netVelocity = computeLineupNetDelta(testLineup);
+assert.equal(netVelocity, 7, "Net velocity should be 4 + 3 + 2 + 2 - 4 = 7");
 
-const tweet = generateLineupShareTweet(sampleLineup);
-assert.ok(tweet.includes("@callmogbot"), "Tweet must mention @callmogbot");
-assert.ok(tweet.includes("#Motion"), "Tweet must include #Motion");
+const tweet = generateLineupShareTweet(testLineup);
+assert.ok(tweet.includes("@motion"), "Tweet must mention @motion");
+assert.ok(tweet.includes("@callmogbot"), "Tweet must tag @callmogbot");
 assert.ok(tweet.includes("#Mogathon"), "Tweet must include #Mogathon");
 assert.ok(
   tweet.includes("https://motionradar.vercel.app/"),
   "Tweet must include the live site URL"
 );
 assert.ok(
-  tweet.includes("Combined Momentum: +10 Δ Net Velocity"),
-  "Tweet must display net combined momentum"
+  tweet.includes("Net Velocity: +7 Δ"),
+  "Tweet must display net combined velocity"
 );
-for (const creator of sampleLineup) {
-  assert.ok(
-    tweet.includes(creator.name),
-    `Tweet should list drafted creator ${creator.name}`
-  );
-}
-console.log("✔ Lineup net delta & viral share tweet generation passed");
+assert.ok(
+  tweet.includes("1. Valkyrae (#18 | ↑ +4)"),
+  "Tweet should format creator line with arrow"
+);
+assert.ok(
+  tweet.includes("5. Garry Tan (#43 | 🎯 Contrarian Dip -4)"),
+  "Tweet should format contrarian dip with tag"
+);
 
+console.log("✔ Pre-filled X share intent format verified");
 console.log("🎉 All MotionRadar verification & scout engine tests passed!");
