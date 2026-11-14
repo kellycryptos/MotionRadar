@@ -43,11 +43,11 @@ export function Header({
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <Link
             href="/how-it-works"
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs text-zinc-400 hover:text-white hover:bg-white/[0.04] transition-colors border border-transparent hover:border-white/[0.06]"
+            className="flex items-center gap-1.5 px-2 py-1.5 sm:px-2.5 rounded-xl text-xs text-zinc-400 hover:text-white hover:bg-white/[0.04] transition-colors border border-transparent hover:border-white/[0.06]"
             title="How Motion Works"
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span>How it works</span>
+            <span className="hidden sm:inline">How it works</span>
           </Link>
 
           {/* Status badge with integrated refresh button */}
