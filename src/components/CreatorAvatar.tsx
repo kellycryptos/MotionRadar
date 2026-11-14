@@ -18,11 +18,13 @@ export interface CreatorAvatarProps {
 }
 
 /**
- * Resilient CreatorAvatar component for MotionRadar:
- * 1. Primary: https://unavatar.io/twitter/${handle} (with automatic fallback parameter)
- * 2. Secondary: https://unavatar.io/x/${handle}
- * 3. Tertiary: https://api.dicebear.com/7.x/initials/svg (Zero rate-limit vector SVG)
- * 4. Final: High-contrast styled initials container
+ * Resilient CreatorAvatar for MotionRadar.
+ * Tries multiple free avatar services before falling back to initials.
+ * 1. avatarsapi.com/x/{handle}
+ * 2. unavatar.io/x/{handle}
+ * 3. unavatar.io/twitter/{handle}
+ * 4. DiceBear initials SVG
+ * 5. Local styled initials
  */
 export function CreatorAvatar({
   name,
@@ -46,7 +48,6 @@ export function CreatorAvatar({
   const [sourceStep, setSourceStep] = useState<number>(0);
   const [currentHandle, setCurrentHandle] = useState<string | undefined>(resolvedHandle);
 
-  // Sync state if handle changes
   if (currentHandle !== resolvedHandle) {
     setCurrentHandle(resolvedHandle);
     setSourceStep(0);
@@ -66,13 +67,18 @@ export function CreatorAvatar({
     resolvedName || "Motion"
   )}&radius=50&backgroundColor=18181b,27272a,0f172a,134e4a,312e81,3f3f46&textColor=f4f4f5,e4e4e7,34d399,a78bfa&fontSize=42&fontWeight=600`;
 
-  // Determine current image src based on fallback steps
   let src: string | null = null;
-  if (resolvedHandle && sourceStep === 0) {
-    src = `https://unavatar.io/twitter/${resolvedHandle}?fallback=${encodeURIComponent(diceBearUrl)}`;
-  } else if (resolvedHandle && sourceStep === 1) {
-    src = `https://unavatar.io/x/${resolvedHandle}`;
-  } else if (sourceStep <= 2) {
+  if (resolvedHandle) {
+    if (sourceStep === 0) {
+      src = `https://avatarsapi.com/x/${resolvedHandle}`;
+    } else if (sourceStep === 1) {
+      src = `https://unavatar.io/x/${resolvedHandle}`;
+    } else if (sourceStep === 2) {
+      src = `https://unavatar.io/twitter/${resolvedHandle}`;
+    } else if (sourceStep === 3) {
+      src = diceBearUrl;
+    }
+  } else if (sourceStep <= 0) {
     src = diceBearUrl;
   }
 
