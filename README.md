@@ -21,7 +21,20 @@ Because scoring depends on rapid shifts in attention rather than static follower
 - **Spot Volatility Outliers**: Highlights top movers sorted by absolute rank change ($|\Delta|$).
 - **Curated Crypto / CT Segment**: Indexes leading Web3 founders, thinkers, and personalities (Vitalik, Cobie, Ansem, Toly, etc.).
 - **Scouting Presets & Export**: One-click filters for high-volatility creators, instant CSV export, and market pulse summaries.
+- **How Motion Works**: Interactive explainer covering Stars, Rarity, Score Boosts, and lineup strategy in under a minute.
 - **Zero-Friction Reliability**: Edge-cached queries with automatic failover to local snapshot data if the upstream API is unreachable.
+
+---
+
+## How Motion Works
+
+New to Motion? Visit the [How it Works](https://motionradar.vercel.app/how-it-works) page for a clear, under-a-minute walkthrough of:
+
+- Motion Score (Attention Velocity)
+- Stars and the Star Cap
+- Rarity and Score Boosts
+- Building a 5-creator lineup
+- The weekly loop
 
 ---
 
@@ -50,6 +63,7 @@ flowchart TD
         Cards["Biggest Movers Card Deck"]
         Presets["Scouting Presets<br/><code>CT Elite, |Δ| ≥ 2, Top 10</code>"]
         Tools["Data Tools<br/><code>CSV Exporter & Social Pulse Generator</code>"]
+        Explainer["How Motion Works<br/><code>/how-it-works</code>"]
     end
 
     API --> Fetch
@@ -78,6 +92,9 @@ A high-contrast card grid featuring the creators with the largest rank shifts in
 
 ### Curated Crypto Twitter (CT) Hub
 A dedicated view for the Web3 and CT creator sphere, pre-indexing leaders such as Vitalik Buterin, Anatoly Yakovenko (Toly), Cobie, Ansem, Threadguy, and Clemente.
+
+### How Motion Works Explainer
+A dedicated page that walks new players through the core mechanics in under a minute: Motion Score, Stars, Rarity & Score Boosts, lineup building under the Star Cap, and the weekly loop.
 
 ### Weekly 5-Creator Lineup Builder & Viral X Share
 Players draft a 5-person roster each week in Motion. MotionRadar includes an interactive floating lineup dock:
@@ -183,6 +200,7 @@ export interface LeaderboardResponse {
 | **Movers Logic** | Absolute rank volatility and momentum sorting | [`src/lib/api.ts`](src/lib/api.ts) |
 | **Crypto Registry** | Curated metadata mapping for Web3 and CT figures | [`src/lib/crypto-creators.ts`](src/lib/crypto-creators.ts) |
 | **Fallback Fixture** | Deterministic baseline snapshot for zero-config operation | [`src/lib/fixture-data.ts`](src/lib/fixture-data.ts) |
+| **How It Works** | Under-a-minute explainer of Stars, Rarity, Boosts, and lineups | [`src/app/how-it-works/page.tsx`](src/app/how-it-works/page.tsx) |
 | **Pulse Generator** | Pre-formatted market pulse generator for community sharing | [`src/components/MogathonModal.tsx`](src/components/MogathonModal.tsx) |
 | **Verification Suite** | Automated unit and data integrity tests | [`scripts/test-verification.mjs`](scripts/test-verification.mjs) |
 
@@ -194,6 +212,8 @@ export interface LeaderboardResponse {
   - Live leaderboard ingestion with 60s background revalidation.
   - Biggest Movers detection, CT curation, and multi-column sorting.
   - Offline snapshot resilience and test suite.
+- [x] **How Motion Works Explainer**
+  - Under-a-minute walkthrough of Stars, Rarity, Score Boosts, and lineup strategy.
 - [ ] **Phase 2: Historical Trajectories**
   - Creator sparklines showing 7-day and 30-day rank trajectories.
   - Historical volatility indexes and momentum score calculations.
