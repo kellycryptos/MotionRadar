@@ -18,11 +18,11 @@ export interface CreatorAvatarProps {
 }
 
 /**
- * Resilient CreatorAvatar component for MotionRadar.
- * 1. Primary: https://unavatar.io/x/${handle}
- * 2. Secondary fallback on error: https://unavatar.io/twitter/${handle}
- * 3. Final fallback: styled 2-letter initials circle
- * Uses loading="lazy" and referrerPolicy="no-referrer" to prevent rate-limits and CORS/hotlink blocks.
+ * Resilient CreatorAvatar component for MotionRadar:
+ * 1. Primary: https://unavatar.io/twitter/${handle} (with automatic fallback parameter)
+ * 2. Secondary: https://unavatar.io/x/${handle}
+ * 3. Tertiary: https://api.dicebear.com/7.x/initials/svg (Zero rate-limit vector SVG)
+ * 4. Final: High-contrast styled initials container
  */
 export function CreatorAvatar({
   name,
@@ -62,18 +62,29 @@ export function CreatorAvatar({
   const imgClasses = `rounded-full object-cover border border-white/10 shrink-0 bg-[#18181C] ${baseSize} ${className || ""}`.trim();
   const fallbackClasses = `rounded-full bg-[#18181C] border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-200 shrink-0 font-mono ${baseSize} ${className || ""}`.trim();
 
-  // Try X avatar endpoints before falling back to initials
-  if (resolvedHandle && sourceStep < 2) {
-    const src =
-      sourceStep === 0
-        ? `https://unavatar.io/x/${resolvedHandle}`
-        : `https://unavatar.io/twitter/${resolvedHandle}`;
+  const diceBearUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
+    resolvedName || "Motion"
+  )}&radius=50&backgroundColor=18181b,27272a,0f172a,134e4a,312e81,3f3f46&textColor=f4f4f5,e4e4e7,34d399,a78bfa&fontSize=42&fontWeight=600`;
 
+  // Determine current image src based on fallback steps
+  let src: string | null = null;
+  if (resolvedHandle && sourceStep === 0) {
+    src = `https://unavatar.io/twitter/${resolvedHandle}?fallback=${encodeURIComponent(diceBearUrl)}`;
+  } else if (resolvedHandle && sourceStep === 1) {
+    src = `https://unavatar.io/x/${resolvedHandle}`;
+  } else if (sourceStep <= 2) {
+    src = diceBearUrl;
+  }
+
+  if (src) {
     return (
       <img
         src={src}
         alt={altText}
+        width={28}
+        height={28}
         loading="lazy"
+        decoding="async"
         referrerPolicy="no-referrer"
         onError={handleError}
         className={imgClasses}

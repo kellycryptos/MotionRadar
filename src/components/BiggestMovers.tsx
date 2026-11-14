@@ -147,32 +147,21 @@ export function BiggestMovers({
               <div
                 key={creator.id}
                 onClick={() => onSelectCreator(creator.name)}
-                className={`group relative bg-[#121215] border rounded-xl sm:rounded-2xl p-3 sm:p-5 flex flex-col justify-between h-[155px] sm:h-[195px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition cursor-pointer overflow-hidden ${
+                className={`group relative bg-[#121215] border rounded-xl sm:rounded-2xl p-3.5 sm:p-5 pb-4 sm:pb-5 flex flex-col justify-between h-[165px] sm:h-[195px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition cursor-pointer overflow-hidden ${
                   isInLineup
                     ? "border-emerald-500/40 bg-emerald-500/[0.04] border-l-2 border-l-emerald-500"
                     : "border-white/[0.07] hover:border-white/[0.15]"
                 }`}
               >
-                {/* Top Row: Rank & Delta Badge + Pick Button */}
-                <div className="flex items-center justify-between z-10 gap-1">
-                  <div className="flex items-center gap-1 sm:gap-2 truncate">
-                    <span className="font-mono text-[10px] sm:text-xs text-zinc-500 shrink-0">
-                      #{creator.position}
-                    </span>
-                    {signal && (
-                      <span
-                        title={signal.thesis}
-                        className={`inline-flex items-center gap-0.5 text-[8px] sm:text-[9px] font-mono px-1 py-0.2 rounded shrink-0 ${signal.tagColor}`}
-                      >
-                        <span>{signal.emoji}</span>
-                        <span className="hidden sm:inline">{signal.badge}</span>
-                      </span>
-                    )}
-                  </div>
+                {/* Top Row: ONLY Rank on the left, Delta + Draft on the right with ZERO crowding */}
+                <div className="flex items-center justify-between z-10 gap-2">
+                  <span className="font-mono text-xs sm:text-sm font-semibold text-zinc-500 shrink-0">
+                    #{creator.position}
+                  </span>
 
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
                     <span
-                      className={`px-1.5 py-0.5 rounded-md text-[10px] sm:text-xs font-mono font-bold shrink-0 ${
+                      className={`px-1.5 sm:px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-mono font-bold shrink-0 ${
                         isUp
                           ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                           : isDown
@@ -218,25 +207,38 @@ export function BiggestMovers({
                   </div>
                 </div>
 
-                {/* Middle: Creator Avatar + Name & Inline CT Badge */}
-                <div className="z-10 my-1">
+                {/* Middle: Avatar + Name + Scout Signal cleanly placed below name */}
+                <div className="z-10 my-1 space-y-1 sm:space-y-1.5">
                   <div className="flex items-center gap-2">
-                    <CreatorAvatar creator={creator} className="w-8 h-8 sm:w-9 sm:h-9" />
-                    <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap truncate">
-                      <span className="text-sm sm:text-xl font-bold text-white group-hover:text-zinc-200 transition truncate max-w-full">
+                    <CreatorAvatar creator={creator} className="w-7 h-7 sm:w-9 sm:h-9 shrink-0" />
+                    <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap truncate min-w-0">
+                      <span className="text-xs sm:text-base lg:text-lg font-bold text-white group-hover:text-zinc-200 transition truncate max-w-full">
                         {creator.name}
                       </span>
                       {isCT && (
-                        <span className="px-1 py-0.2 rounded text-[8px] sm:text-[10px] font-mono bg-purple-500/15 text-purple-300 border border-purple-500/30 shrink-0">
+                        <span className="px-1 py-0.2 rounded text-[8px] sm:text-[9px] font-mono bg-purple-500/15 text-purple-300 border border-purple-500/30 shrink-0">
                           CT
                         </span>
                       )}
                     </div>
                   </div>
+
+                  {/* Scout Signal Pill cleanly below name with zero truncation */}
+                  {signal && (
+                    <div className="flex items-center">
+                      <span
+                        title={signal.thesis}
+                        className={`inline-flex items-center gap-1 text-[8px] sm:text-[10px] font-mono px-1.5 sm:px-2 py-0.5 rounded-full border ${signal.tagColor} shadow-sm shrink-0 whitespace-nowrap`}
+                      >
+                        <span>{signal.emoji}</span>
+                        <span className="font-semibold">{signal.badge}</span>
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                {/* Bottom Row: Rank Progression */}
-                <div className="text-[10px] sm:text-xs font-mono text-zinc-500 z-10">
+                {/* Bottom Row: Rank Progression with plenty of pb so it is never clipped */}
+                <div className="text-[10px] sm:text-xs font-mono text-zinc-500 z-10 pb-1">
                   prev #{prevPosition}
                 </div>
 
@@ -261,7 +263,7 @@ export function BiggestMovers({
               <div
                 key={creator.id}
                 onClick={() => onSelectCreator(creator.name)}
-                className={`group relative bg-[#121215] border rounded-xl sm:rounded-2xl p-2.5 sm:p-4 flex flex-col justify-between h-[88px] sm:h-[94px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition cursor-pointer overflow-hidden ${
+                className={`group relative bg-[#121215] border rounded-xl sm:rounded-2xl p-2.5 sm:p-4 pb-3 sm:pb-4 flex flex-col justify-between h-[88px] sm:h-[94px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition cursor-pointer overflow-hidden ${
                   isInLineup
                     ? "border-emerald-500/40 bg-emerald-500/[0.04] border-l-2 border-l-emerald-500"
                     : "border-white/[0.07] hover:border-white/[0.15]"
@@ -330,7 +332,7 @@ export function BiggestMovers({
 
                 {/* Middle: Creator Avatar + Name & CT Badge */}
                 <div className="flex items-center gap-1.5 z-10 truncate my-0.5">
-                  <CreatorAvatar creator={creator} className="w-6 h-6 sm:w-7 sm:h-7" />
+                  <CreatorAvatar creator={creator} className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
                   <span className="text-xs sm:text-sm font-semibold text-white group-hover:text-zinc-200 transition truncate">
                     {creator.name}
                   </span>

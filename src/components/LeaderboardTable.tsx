@@ -134,7 +134,7 @@ export function LeaderboardTable({
               return (
                 <tr
                   key={creator.id}
-                  className={`h-[52px] hover:bg-white/[0.03] transition-colors group ${
+                  className={`h-[52px] hover:bg-white/[0.03] transition-colors group [content-visibility:auto] [contain-intrinsic-size:52px] ${
                     isInLineup
                       ? "bg-emerald-500/[0.04] border-l-2 border-l-emerald-500"
                       : ""
