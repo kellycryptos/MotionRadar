@@ -1,98 +1,133 @@
 # MotionRadar 📡⚡
 
-> Real-time analytics, leaderboard tracker, and momentum radar for the [Motion](https://seats.motion.game) creator fantasy game. Built for **Mogathon**.
+> Real-time momentum intelligence, attention velocity tracking, and leaderboard analytics for the [Motion](https://seats.motion.game) creator fantasy ecosystem.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/kellycryptos/MotionRadar)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
-[![Next.js](https://img.shields.io/badge/Next.js-15.1-black.svg)](https://nextjs.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8.svg)](https://tailwindcss.com/)
-
----
-
-## 🎯 What is MotionRadar?
-
-**Motion** is a fantasy game where players collect cards of creators (streamers, founders, crypto leaders, internet personalities), draft weekly lineups of 5, and score points based on cultural velocity across X, Instagram, TikTok, and YouTube.
-
-**MotionRadar** connects directly to the live Motion leaderboard to:
-- Track ranked creators and real-time rank changes ($\Delta$).
-- Highlight **Biggest Movers** sorted by absolute rank volatility ($|\Delta|$).
-- Filter and monitor top **Crypto / CT influencers** (Ansem, Cobie, Vitalik, Toly, Clemente, Threadguy, etc.).
-- Deliver a fast, responsive, dark-mode dashboard with instantaneous search and zero setup friction.
-- Provide a 1-click **Mogathon Submission Assistant** with pre-formatted market pulse updates for `@callmogbot`.
+[![Live App](https://img.shields.io/badge/Live%20App-motionradar.vercel.app-10b981.svg?style=flat-square&logo=vercel)](https://motionradar.vercel.app)
+[![Next.js 15](https://img.shields.io/badge/Next.js-15.1-black.svg?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178c6.svg?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Tests](https://img.shields.io/badge/Tests-Passing-emerald.svg?style=flat-square)](scripts/test-verification.mjs)
+[![License: MIT](https://img.shields.io/badge/License-MIT-gray.svg?style=flat-square)](LICENSE)
 
 ---
 
-## 🏆 Mogathon Sponsor Track & Evidence Matrix ("The Receipt Box")
+## Overview
 
-| Sponsor / Track | Integration & Artifact | Source Code Permalinks | Status |
-| :--- | :--- | :--- | :--- |
-| **Motion Leaderboard API** | Live endpoint ingestion (`https://leaderboard.motion.game/api/leaderboard`) with fallback fixture | [`src/lib/api.ts#L16-L53`](src/lib/api.ts) | Verified Live |
-| **Movers & Volatility Engine** | Top rank jumper / dropper detection and absolute delta sorting | [`src/lib/api.ts#L104-L109`](src/lib/api.ts) | Tested |
-| **CT / Crypto Curation** | Curated registry and metadata for Crypto Twitter creators & founders | [`src/lib/crypto-creators.ts#L8-L168`](src/lib/crypto-creators.ts) | Live Tagged |
-| **Mogathon Bot Share Assistant** | 1-click formatted post builder for submitting to `@callmogbot` | [`src/components/MogathonModal.tsx`](src/components/MogathonModal.tsx) | Operational |
-| **Zero-Config Sandbox** | Automated CI/CD immune build with deterministic offline snapshot | [`src/lib/fixture-data.ts`](src/lib/fixture-data.ts) | 0-env Passing |
+[Motion](https://seats.motion.game) is a creator fantasy sports game where players collect digital creator cards, draft weekly 5-person lineups, and score points based on cultural velocity across X, Instagram, TikTok, and YouTube.
 
----
+Because scoring depends on rapid shifts in attention rather than static follower counts, scouting breakout creators before lineup locks requires real-time momentum data.
 
-## ✨ Features
-
-- **Live Data Feed**: Connects to `https://leaderboard.motion.game/api/leaderboard` with 60s background revalidation.
-- **Dedicated Biggest Movers**: Cards grid highlighting creators with the highest absolute rank fluctuations ($|\Delta|$).
-- **Color-Coded Rank Deltas**: Emerald green for rank gains (`+Δ`), crimson red for drops (`-Δ`), subtle slate for unchanged (`0`).
-- **Interactive Search**: Instant type-ahead filtering by creator name or alias.
-- **Category Filter Tabs**:
-  - `All`: Full ranked roster
-  - `Movers`: Creators with non-zero rank changes ($|\Delta| > 0$)
-  - `Gainers`: Momentum runners ($+\Delta$)
-  - `Drops`: Creators falling down the board ($-\Delta$)
-  - `Crypto / CT`: Curated Web3/CT heavyweights (Cobie, Ansem, Vitalik, Toly, Mert, etc.)
-  - `New`: Newly entered creators on the leaderboard
-- **90-Second Evaluator Presets**:
-  - `CT Elite`: 1-click focus on top Crypto Twitter culture leaders
-  - `|Δ| ≥ 2`: High-volatility shock filter
-  - `Top 10`: The current top 10 ranked creators
-- **Multi-Column Sorting**: Sort by Rank, Creator Name, Net Delta, or Absolute Volatility.
-- **Export to CSV**: Instant 1-click download of the active filtered dataset.
-- **Fail-Safe Offline Mode**: Gracefully activates a local cached baseline fixture if the external API is ever unreachable or rate-limited.
-- **Linear-Grade Dark UI**: Minimalist, high-contrast dark theme optimized for both desktop and mobile screens.
+**MotionRadar** connects directly to the live Motion leaderboard to provide an analytics terminal for players, scouts, and creators:
+- **Quantify Attention Velocity**: Tracks live ranks and instantaneous rank changes ($\Delta$) against comparative capture baselines.
+- **Spot Volatility Outliers**: Highlights top movers sorted by absolute rank change ($|\Delta|$).
+- **Curated Crypto / CT Segment**: Indexes leading Web3 founders, thinkers, and personalities (Vitalik, Cobie, Ansem, Toly, etc.).
+- **Scouting Presets & Export**: One-click filters for high-volatility creators, instant CSV export, and market pulse summaries.
+- **Zero-Friction Reliability**: Edge-cached queries with automatic failover to local snapshot data if the upstream API is unreachable.
 
 ---
 
-## 🛠 Tech Stack
+## System Architecture
 
-- **Framework**: [Next.js 15](https://nextjs.org/) (App Router, Server Components & Route Handlers)
-- **Language**: TypeScript 5.7
-- **Styling**: Tailwind CSS 3.4
-- **Icons**: Lucide React
-- **Deployment**: Vercel
+```mermaid
+flowchart TD
+    subgraph DataSources["Data Ingestion"]
+        API["Motion Live API<br/><code>leaderboard.motion.game</code>"]
+        Fixture["Deterministic Baseline Fixture<br/><code>FALLBACK_LEADERBOARD</code>"]
+    end
+
+    subgraph Service["Ingestion & Resilience Layer"]
+        Fetch["Fetch Client with AbortController<br/><code>6000ms Timeout</code>"]
+        ISR["Edge Cache<br/><code>revalidate: 60s</code>"]
+    end
+
+    subgraph Analytics["Analytics Engine"]
+        Velocity["Attention Velocity Engine<br/><code>Rank, Delta (Δ), Volatility (|Δ|)</code>"]
+        Movers["Movers Sorter<br/><code>Top Gainers & Outlier Drops</code>"]
+        CTRegistry["Curated CT / Crypto Registry<br/><code>Metadata & Ecosystem Tags</code>"]
+    end
+
+    subgraph UI["MotionRadar Web Application"]
+        Dashboard["Interactive Dashboard<br/><code>Type-ahead Search, Multi-column Sorting</code>"]
+        Cards["Biggest Movers Card Deck"]
+        Presets["Scouting Presets<br/><code>CT Elite, |Δ| ≥ 2, Top 10</code>"]
+        Tools["Data Tools<br/><code>CSV Exporter & Social Pulse Generator</code>"]
+    end
+
+    API --> Fetch
+    Fetch -->|Live Stream| ISR
+    Fetch -.->|Fallback on error / timeout| Fixture
+    ISR --> Velocity
+    Fixture --> Velocity
+    Velocity --> Movers
+    Velocity --> CTRegistry
+    Movers --> Cards
+    CTRegistry --> Dashboard
+    Movers --> Dashboard
+    Presets --> Dashboard
+    Dashboard --> Tools
+```
 
 ---
 
-## 🚀 Quickstart
+## Features
+
+### Attention Velocity Engine
+Scoring in Motion reflects momentum. MotionRadar calculates both directional movement ($+\Delta$ gainers and $-\Delta$ droppers) and absolute volatility ($|\Delta|$) to identify who is gaining or losing cultural traction.
+
+### Biggest Movers Radar
+A high-contrast card grid featuring the creators with the largest rank shifts in the current period, letting scouts spot breakouts before market prices adapt.
+
+### Curated Crypto Twitter (CT) Hub
+A dedicated view for the Web3 and CT creator sphere, pre-indexing leaders such as Vitalik Buterin, Anatoly Yakovenko (Toly), Cobie, Ansem, Threadguy, and Clemente.
+
+### Fast Scouting Presets
+- **CT Elite**: Isolates verified Crypto Twitter creators.
+- **$|\Delta| \ge 2$**: Filters out static positions to show creators undergoing notable movement.
+- **Top 10**: Focuses on the current leaderboard leaders.
+
+### Data Tools & Social Pulse
+- **Export to CSV**: Instant client-side download of the active, filtered dataset.
+- **Market Pulse Modal**: Generates structured, pre-formatted scouting updates ready to share to social channels or `@callmogbot`.
+
+### Resilient by Design
+Built with an edge-revalidation pipeline (`revalidate: 60`) and a local fallback snapshot. The application remains fully functional and testable without requiring API keys or external dependencies.
+
+---
+
+## Getting Started
 
 ### Prerequisites
-- Node.js 18+ (tested on Node v20 and v22)
-- npm or pnpm
+- Node.js 18+ (tested on Node 20 LTS and Node 22)
+- npm, pnpm, or yarn
 
-### 1. Clone & Install
+### Installation
+
 ```bash
+# Clone the repository
 git clone https://github.com/kellycryptos/MotionRadar.git
 cd MotionRadar
+
+# Install dependencies
 npm install
 ```
 
-### 2. Run Development Server
-```bash
-npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+### Verification Tests
 
-### 3. Run Verification Tests
+Run the test suite to verify data structures, calculations, and CT creator detection:
+
 ```bash
 npm test
 ```
 
-### 4. Build for Production
+### Development Server
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Production Build
+
 ```bash
 npm run build
 npm start
@@ -100,35 +135,58 @@ npm start
 
 ---
 
-## 📡 Data Shape
+## Data Model
 
-```ts
-type LeaderboardResponse = {
-  asOf: string;
-  capturedAt: string;
-  baselineCapturedAt: string;
-  history: string;
-  rows: {
-    id: string;
-    name: string;
-    position: number;
-    delta: number;
-    isNew: boolean;
-  }[];
-};
+```typescript
+export interface LeaderboardCreator {
+  id: string;          // Unique creator identifier
+  name: string;        // Creator display name
+  position: number;    // Current 1-based rank
+  delta: number;       // Change vs previous capture (+/-)
+  isNew: boolean;      // First-time leaderboard entry
+}
+
+export interface LeaderboardResponse {
+  asOf: string;               // Timestamp of generation
+  capturedAt: string;         // Current telemetry capture
+  baselineCapturedAt: string; // Baseline capture timestamp
+  history: string;            // Tracking window label
+  rows: LeaderboardCreator[]; // Array of ranked creators
+}
 ```
 
 ---
 
-## 🤖 Submitting to Mogathon
+## Architecture & Implementation Reference
 
-1. Deploy the app to Vercel or run locally.
-2. Click the **"Share"** button in the header.
-3. Copy the pre-formatted post text.
-4. Post to X and tag **`@callmogbot`**!
+| Component | Description | Source Reference |
+| :--- | :--- | :--- |
+| **API Ingestion** | Live endpoint fetch with timeout handling and automatic fallback | [`src/lib/api.ts`](src/lib/api.ts) |
+| **Movers Logic** | Absolute rank volatility and momentum sorting | [`src/lib/api.ts`](src/lib/api.ts) |
+| **Crypto Registry** | Curated metadata mapping for Web3 and CT figures | [`src/lib/crypto-creators.ts`](src/lib/crypto-creators.ts) |
+| **Fallback Fixture** | Deterministic baseline snapshot for zero-config operation | [`src/lib/fixture-data.ts`](src/lib/fixture-data.ts) |
+| **Pulse Generator** | Pre-formatted market pulse generator for community sharing | [`src/components/MogathonModal.tsx`](src/components/MogathonModal.tsx) |
+| **Verification Suite** | Automated unit and data integrity tests | [`scripts/test-verification.mjs`](scripts/test-verification.mjs) |
 
 ---
 
-## 📄 License
+## Roadmap
 
-MIT © [kellycryptos](https://github.com/kellycryptos)
+- [x] **Phase 1: Telemetry & Core Analytics**
+  - Live leaderboard ingestion with 60s background revalidation.
+  - Biggest Movers detection, CT curation, and multi-column sorting.
+  - Offline snapshot resilience and test suite.
+- [ ] **Phase 2: Historical Trajectories**
+  - Creator sparklines showing 7-day and 30-day rank trajectories.
+  - Historical volatility indexes and momentum score calculations.
+- [ ] **Phase 3: Web3 & Squad Tools**
+  - Wallet integration to import owned Motion creator cards.
+  - Automated weekly 5-card lineup simulator maximizing expected positive delta.
+- [ ] **Phase 4: Real-Time Alerts**
+  - Webhook alerts (Discord/Telegram) for sudden rank movements ($|\Delta| \ge 5$).
+
+---
+
+## License
+
+This project is open-source under the [MIT License](LICENSE).
