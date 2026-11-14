@@ -158,6 +158,18 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
     setSelectedFilter("all");
   };
 
+  const handleScrollToMovers = () => {
+    setSelectedFilter("movers");
+    setActivePreset(null);
+    document.getElementById("leaderboard-section")?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleScrollToCrypto = () => {
+    setActivePreset("ct-elite");
+    setSelectedFilter("all");
+    document.getElementById("leaderboard-section")?.scrollIntoView({ behavior: "smooth" });
+  };
+
   const handleExportCsv = () => {
     exportLeaderboardToCsv(filteredCreators);
   };
@@ -210,7 +222,7 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
         <BiggestMovers movers={topMovers} onSelectCreator={handleSelectCreator} />
 
         {/* Unified Filter & Control Toolbar + High-Density Table */}
-        <section className="space-y-4 pt-1">
+        <section id="leaderboard-section" className="space-y-4 pt-1">
           <LeaderboardControls
             searchQuery={searchQuery}
             onSearchChange={(q) => {
@@ -240,39 +252,49 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
         </section>
 
         {/* Detailed About & Methodology Section */}
-        <AboutSection />
+        <AboutSection
+          onFilterMovers={handleScrollToMovers}
+          onFilterCrypto={handleScrollToCrypto}
+        />
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-white/[0.08] mt-12 py-6 bg-[#09090B] text-xs text-zinc-500">
+      {/* Bottom Footer Bar */}
+      <footer className="border-t border-white/[0.06] pt-6 pb-8 text-xs text-zinc-500 bg-[#09090B]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            Built for{" "}
-            <a
-              href="https://fluent-labs.notion.site/mogathon"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-zinc-400 hover:text-white underline"
-            >
-              Mogathon
-            </a>{" "}
-            by{" "}
-            <a
-              href="https://github.com/kellycryptos"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-emerald-400 hover:text-emerald-300 font-medium"
-            >
-              @kellycryptos
-            </a>
+          {/* Left Side: System Status Pill */}
+          <div className="bg-[#121215] border border-white/[0.06] px-3 py-1.5 rounded-full font-mono text-[11px] text-zinc-400 flex items-center gap-2 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
+            <span>Data Model: Live + Offline Resilient Fixture</span>
           </div>
 
-          <div className="flex items-center gap-4 font-mono text-[11px]">
+          {/* Right Side: Horizontal Links */}
+          <div className="flex flex-wrap items-center gap-3 font-mono text-[11px]">
+            <span>
+              Built for{" "}
+              <a
+                href="https://fluent-labs.notion.site/mogathon"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-zinc-400 hover:text-zinc-200 underline transition-colors"
+              >
+                Mogathon
+              </a>{" "}
+              by{" "}
+              <a
+                href="https://github.com/kellycryptos"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
+              >
+                @kellycryptos
+              </a>
+            </span>
+            <span>•</span>
             <a
               href="https://seats.motion.game"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-zinc-300 transition"
+              className="text-zinc-400 hover:text-zinc-200 transition-colors"
             >
               Motion Seats
             </a>
@@ -281,7 +303,7 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
               href="https://github.com/kellycryptos/MotionRadar"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-zinc-300 transition"
+              className="text-zinc-400 hover:text-zinc-200 transition-colors"
             >
               GitHub
             </a>
