@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { RefreshCw, Radio, Share2 } from "lucide-react";
+import Link from "next/link";
+import { RefreshCw, Radio, Share2, BookOpen } from "lucide-react";
 import { formatTimeAgo, formatUtcDateTime } from "@/lib/utils";
 
 interface HeaderProps {
@@ -26,20 +27,29 @@ export function Header({
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-4">
         {/* Brand & MOGATHON Badge */}
         <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 min-w-0">
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <Link href="/" className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <Radio className="w-4 h-4 text-zinc-300 shrink-0" />
             <span className="font-bold tracking-tight text-white text-base sm:text-lg shrink-0">
               MotionRadar
             </span>
-          </div>
+          </Link>
 
           <span className="hidden sm:inline-flex text-[9px] uppercase font-mono font-semibold tracking-wider px-1.5 py-0.5 rounded-full bg-white/[0.06] text-zinc-300 border border-white/[0.08] shrink-0">
             MOGATHON
           </span>
         </div>
 
-        {/* Status Pill, Refresh & Share */}
+        {/* Status Pill, How it Works, Refresh & Share */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <Link
+            href="/how-it-works"
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs text-zinc-400 hover:text-white hover:bg-white/[0.04] transition-colors border border-transparent hover:border-white/[0.06]"
+            title="How Motion Works"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>How it works</span>
+          </Link>
+
           {/* Status badge with integrated refresh button */}
           <div className="flex items-center bg-[#121215] border border-white/[0.08] rounded-xl pl-2 sm:pl-2.5 pr-1 py-1 text-xs font-mono shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] shrink-0">
             <div
@@ -72,7 +82,7 @@ export function Header({
             </button>
           </div>
 
-          {/* Share Button: Icon-only on mobile, icon+label on sm+ */}
+          {/* Share Button */}
           <button
             onClick={onOpenShareModal}
             className="flex items-center justify-center gap-1.5 p-2 sm:px-3 sm:py-1.5 rounded-xl bg-[#121215] hover:bg-white/[0.06] text-zinc-200 border border-white/[0.08] text-xs font-medium transition shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] shrink-0"
