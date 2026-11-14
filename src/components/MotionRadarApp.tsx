@@ -263,7 +263,7 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#09090B] text-zinc-100">
+    <div className="min-h-screen flex flex-col bg-[#09090B] text-zinc-100 overflow-x-hidden w-full max-w-full">
       {/* Sticky Header */}
       <Header
         lastUpdated={lastUpdated}
@@ -275,32 +275,32 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
 
       {/* Main Content Area */}
       <main
-        className={`flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5 space-y-6 ${
+        className={`flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-5 space-y-4 sm:space-y-6 overflow-x-hidden ${
           lineup.length > 0 ? "pb-44 sm:pb-48" : "pb-12"
         }`}
       >
         {/* Fallback Banner if API was unreachable */}
         {!isLive && (
-          <div className="flex items-center gap-2.5 px-4 py-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-200">
+          <div className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-200">
             <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
-            <div className="flex-1">
+            <div className="flex-1 truncate">
               <span>Using cached baseline snapshot</span>
               {errorMessage && (
-                <span className="text-amber-400/80 font-mono ml-1.5">
+                <span className="text-amber-400/80 font-mono ml-1.5 hidden sm:inline">
                   ({errorMessage})
                 </span>
               )}
             </div>
             <button
               onClick={handleRefresh}
-              className="text-amber-400 underline font-semibold hover:text-amber-300 ml-2"
+              className="text-amber-400 underline font-semibold hover:text-amber-300 shrink-0"
             >
               Retry
             </button>
           </div>
         )}
 
-        {/* Consolidated Subtitle */}
+        {/* Subtitle */}
         <div className="-mt-1">
           <p className="text-xs sm:text-sm text-zinc-400">
             Live cultural attention & momentum tracker for the Motion game
@@ -308,10 +308,10 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
           </p>
         </div>
 
-        {/* Summary Stat Cards (4-Column Top Grid) */}
+        {/* Summary Stat Cards (Compact 2x2 Grid on Mobile, 4-Column on Desktop) */}
         <StatSummary stats={stats} onSelectCreator={handleSelectCreator} />
 
-        {/* Asymmetric Bento Grid for Biggest Movers */}
+        {/* Asymmetric Bento Grid for Biggest Movers (Compact 2-Column on Mobile) */}
         <BiggestMovers
           movers={topMovers}
           onSelectCreator={handleSelectCreator}
@@ -321,7 +321,7 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
         />
 
         {/* Unified Filter & Control Toolbar + High-Density Table */}
-        <section id="leaderboard-section" className="space-y-4 pt-1">
+        <section id="leaderboard-section" className="space-y-3 sm:space-y-4 pt-1">
           <LeaderboardControls
             searchQuery={searchQuery}
             onSearchChange={(q) => {
@@ -369,16 +369,16 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
       />
 
       {/* Bottom Footer Bar */}
-      <footer className="border-t border-white/[0.06] pt-6 pb-8 text-xs text-zinc-500 bg-[#09090B]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <footer className="border-t border-white/[0.06] pt-5 sm:pt-6 pb-8 text-xs text-zinc-500 bg-[#09090B]">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
           {/* Left Side: System Status Pill */}
-          <div className="bg-[#121215] border border-white/[0.06] px-3 py-1.5 rounded-full font-mono text-[11px] text-zinc-400 flex items-center gap-2 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
-            <span>Data Model: Live + Offline Resilient Fixture</span>
+          <div className="bg-[#121215] border border-white/[0.06] px-3 py-1.5 rounded-full font-mono text-[10px] sm:text-[11px] text-zinc-400 flex items-center gap-2 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)] shrink-0" />
+            <span className="truncate">Data Model: Live + Offline Resilient Fixture</span>
           </div>
 
           {/* Right Side: Horizontal Links */}
-          <div className="flex flex-wrap items-center gap-3 font-mono text-[11px]">
+          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 font-mono text-[10px] sm:text-[11px]">
             <span>
               Built for{" "}
               <a

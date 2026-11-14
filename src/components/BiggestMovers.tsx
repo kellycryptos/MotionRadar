@@ -37,7 +37,7 @@ function MoverSparkline({
       <svg
         viewBox="0 0 160 80"
         fill="none"
-        className="absolute right-0 bottom-0 w-36 h-20 pointer-events-none overflow-hidden"
+        className="absolute right-0 bottom-0 w-28 sm:w-36 h-16 sm:h-20 pointer-events-none overflow-hidden"
         aria-hidden="true"
       >
         <defs>
@@ -69,7 +69,7 @@ function MoverSparkline({
     <svg
       viewBox="0 0 100 45"
       fill="none"
-      className="absolute right-0 bottom-0 w-24 h-12 pointer-events-none opacity-80 overflow-hidden"
+      className="absolute right-0 bottom-0 w-20 sm:w-24 h-10 sm:h-12 pointer-events-none opacity-80 overflow-hidden"
       aria-hidden="true"
     >
       <defs>
@@ -125,13 +125,15 @@ export function BiggestMovers({
             Biggest Movers
           </h2>
         </div>
-        <span className="text-xs text-zinc-500 font-mono">Sorted by |Δ|</span>
+        <span className="text-[11px] sm:text-xs text-zinc-500 font-mono">
+          Sorted by |Δ|
+        </span>
       </div>
 
-      {/* 12-Column Asymmetric Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-        {/* Left 6 Columns: 2 Taller Hero Mover Cards */}
-        <div className="md:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* 12-Column Bento Grid: 2 columns on mobile, 12 on desktop */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-2.5 sm:gap-4">
+        {/* Left 6 Columns: 2 Hero Mover Cards in 2x1 grid on mobile */}
+        <div className="md:col-span-6 grid grid-cols-2 gap-2.5 sm:gap-4">
           {heroMovers.map((creator) => {
             const isUp = creator.delta > 0;
             const isDown = creator.delta < 0;
@@ -144,32 +146,32 @@ export function BiggestMovers({
               <div
                 key={creator.id}
                 onClick={() => onSelectCreator(creator.name)}
-                className={`group relative bg-[#121215] border rounded-2xl p-5 flex flex-col justify-between h-[185px] sm:h-[195px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition cursor-pointer overflow-hidden ${
+                className={`group relative bg-[#121215] border rounded-xl sm:rounded-2xl p-3 sm:p-5 flex flex-col justify-between h-[155px] sm:h-[195px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition cursor-pointer overflow-hidden ${
                   isInLineup
                     ? "border-emerald-500/40 bg-emerald-500/[0.04] border-l-2 border-l-emerald-500"
                     : "border-white/[0.07] hover:border-white/[0.15]"
                 }`}
               >
                 {/* Top Row: Rank & Delta Badge + Pick Button */}
-                <div className="flex items-center justify-between z-10">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs text-zinc-500">
+                <div className="flex items-center justify-between z-10 gap-1">
+                  <div className="flex items-center gap-1 sm:gap-2 truncate">
+                    <span className="font-mono text-[10px] sm:text-xs text-zinc-500 shrink-0">
                       #{creator.position}
                     </span>
                     {signal && (
                       <span
                         title={signal.thesis}
-                        className={`inline-flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.2 rounded ${signal.tagColor}`}
+                        className={`inline-flex items-center gap-0.5 text-[8px] sm:text-[9px] font-mono px-1 py-0.2 rounded shrink-0 ${signal.tagColor}`}
                       >
                         <span>{signal.emoji}</span>
-                        <span>{signal.badge}</span>
+                        <span className="hidden sm:inline">{signal.badge}</span>
                       </span>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1 shrink-0">
                     <span
-                      className={`px-2 py-0.5 rounded-md text-xs font-mono font-bold ${
+                      className={`px-1.5 py-0.5 rounded-md text-[10px] sm:text-xs font-mono font-bold shrink-0 ${
                         isUp
                           ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                           : isDown
@@ -194,38 +196,35 @@ export function BiggestMovers({
                             ? "Lineup is full (5/5)"
                             : "Draft to Lineup"
                         }
-                        className={`inline-flex items-center gap-1 text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md transition border ${
+                        className={`inline-flex items-center justify-center p-1 sm:px-2 sm:py-0.5 rounded-md transition border text-[10px] font-mono font-semibold shrink-0 ${
                           isInLineup
-                            ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/40"
+                            ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-rose-500/20 hover:text-rose-300"
                             : isLineupFull
                             ? "bg-white/[0.02] text-zinc-600 border-white/[0.04] opacity-40 cursor-not-allowed"
-                            : "bg-white/[0.05] text-zinc-300 border-white/[0.08] hover:text-white hover:bg-white/[0.1] hover:border-white/20 cursor-pointer"
+                            : "bg-white/[0.05] text-zinc-300 border-white/[0.08] hover:text-white hover:bg-white/[0.1] cursor-pointer"
                         }`}
                       >
                         {isInLineup ? (
-                          <>
-                            <Check className="w-3 h-3 text-emerald-400" />
-                            <span>In Lineup</span>
-                          </>
+                          <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-400" />
                         ) : (
-                          <>
-                            <Plus className="w-3 h-3" />
-                            <span>Draft</span>
-                          </>
+                          <Plus className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                         )}
+                        <span className="hidden sm:inline ml-1">
+                          {isInLineup ? "In" : "Draft"}
+                        </span>
                       </button>
                     )}
                   </div>
                 </div>
 
                 {/* Middle: Creator Name & Inline CT Badge */}
-                <div className="z-10 my-2">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-lg sm:text-xl font-bold text-white group-hover:text-zinc-200 transition truncate">
+                <div className="z-10 my-1">
+                  <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+                    <span className="text-sm sm:text-xl font-bold text-white group-hover:text-zinc-200 transition truncate max-w-full">
                       {creator.name}
                     </span>
                     {isCT && (
-                      <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                      <span className="px-1 py-0.2 rounded text-[8px] sm:text-[10px] font-mono bg-purple-500/15 text-purple-300 border border-purple-500/30 shrink-0">
                         CT
                       </span>
                     )}
@@ -233,7 +232,7 @@ export function BiggestMovers({
                 </div>
 
                 {/* Bottom Row: Rank Progression */}
-                <div className="text-xs font-mono text-zinc-500 z-10">
+                <div className="text-[10px] sm:text-xs font-mono text-zinc-500 z-10">
                   prev #{prevPosition}
                 </div>
 
@@ -244,8 +243,8 @@ export function BiggestMovers({
           })}
         </div>
 
-        {/* Right 6 Columns: Compact 2x2 Grid */}
-        <div className="md:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Right 6 Columns: 4 Movers in 2x2 grid */}
+        <div className="md:col-span-6 grid grid-cols-2 gap-2.5 sm:gap-4">
           {remainingMovers.map((creator) => {
             const isUp = creator.delta > 0;
             const isDown = creator.delta < 0;
@@ -258,32 +257,31 @@ export function BiggestMovers({
               <div
                 key={creator.id}
                 onClick={() => onSelectCreator(creator.name)}
-                className={`group relative bg-[#121215] border rounded-2xl p-3.5 sm:p-4 flex flex-col justify-between h-[88px] sm:h-[94px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition cursor-pointer overflow-hidden ${
+                className={`group relative bg-[#121215] border rounded-xl sm:rounded-2xl p-2.5 sm:p-4 flex flex-col justify-between h-[88px] sm:h-[94px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition cursor-pointer overflow-hidden ${
                   isInLineup
                     ? "border-emerald-500/40 bg-emerald-500/[0.04] border-l-2 border-l-emerald-500"
                     : "border-white/[0.07] hover:border-white/[0.15]"
                 }`}
               >
                 {/* Top Row: Rank & Delta */}
-                <div className="flex items-center justify-between z-10">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-mono text-xs text-zinc-500">
+                <div className="flex items-center justify-between z-10 gap-1">
+                  <div className="flex items-center gap-1 truncate">
+                    <span className="font-mono text-[10px] sm:text-xs text-zinc-500 shrink-0">
                       #{creator.position}
                     </span>
                     {signal && (
                       <span
                         title={signal.thesis}
-                        className={`inline-flex items-center gap-0.5 text-[8px] font-mono px-1 py-0.2 rounded ${signal.tagColor}`}
+                        className={`inline-flex items-center text-[8px] font-mono px-1 py-0.2 rounded shrink-0 ${signal.tagColor}`}
                       >
                         <span>{signal.emoji}</span>
-                        <span>{signal.badge}</span>
                       </span>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1 shrink-0">
                     <span
-                      className={`font-mono text-xs font-bold ${
+                      className={`font-mono text-[10px] sm:text-xs font-bold shrink-0 ${
                         isUp
                           ? "text-emerald-400"
                           : isDown
@@ -308,24 +306,18 @@ export function BiggestMovers({
                             ? "Lineup is full (5/5)"
                             : "Draft to Lineup"
                         }
-                        className={`inline-flex items-center gap-0.5 text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded transition border ${
+                        className={`w-4 h-4 sm:w-5 sm:h-5 rounded flex items-center justify-center text-xs transition border shrink-0 ${
                           isInLineup
                             ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
                             : isLineupFull
                             ? "bg-white/[0.02] text-zinc-600 border-white/[0.04] opacity-40 cursor-not-allowed"
-                            : "bg-white/[0.05] text-zinc-300 border-white/[0.08] hover:text-white hover:bg-white/[0.1] hover:border-white/20 cursor-pointer"
+                            : "bg-white/[0.05] text-zinc-400 border-white/[0.08] hover:text-white hover:bg-white/[0.1] cursor-pointer"
                         }`}
                       >
                         {isInLineup ? (
-                          <>
-                            <Check className="w-2.5 h-2.5 text-emerald-400" />
-                            <span>Drafted</span>
-                          </>
+                          <Check className="w-2.5 h-2.5 text-emerald-400" />
                         ) : (
-                          <>
-                            <Plus className="w-2.5 h-2.5" />
-                            <span>Draft</span>
-                          </>
+                          <Plus className="w-2.5 h-2.5" />
                         )}
                       </button>
                     )}
@@ -333,19 +325,19 @@ export function BiggestMovers({
                 </div>
 
                 {/* Middle: Creator Name & CT Badge */}
-                <div className="flex items-center gap-1.5 z-10 truncate my-0.5">
-                  <span className="text-sm font-semibold text-white group-hover:text-zinc-200 transition truncate">
+                <div className="flex items-center gap-1 z-10 truncate my-0.5">
+                  <span className="text-xs sm:text-sm font-semibold text-white group-hover:text-zinc-200 transition truncate">
                     {creator.name}
                   </span>
                   {isCT && (
-                    <span className="px-1 py-0.2 rounded text-[9px] font-mono bg-purple-500/15 text-purple-300 border border-purple-500/30 shrink-0">
+                    <span className="px-1 py-0.2 rounded text-[8px] sm:text-[9px] font-mono bg-purple-500/15 text-purple-300 border border-purple-500/30 shrink-0">
                       CT
                     </span>
                   )}
                 </div>
 
                 {/* Bottom Row */}
-                <div className="text-[11px] font-mono text-zinc-500 z-10">
+                <div className="text-[10px] sm:text-[11px] font-mono text-zinc-500 z-10">
                   prev #{prevPosition}
                 </div>
 

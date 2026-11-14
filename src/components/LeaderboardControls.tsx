@@ -61,18 +61,18 @@ export function LeaderboardControls({
   activePreset,
 }: LeaderboardControlsProps) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5 sm:space-y-3">
       {/* Top Bar: Search Input (left) & Sort / CSV Export (right) */}
-      <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-2.5 items-stretch sm:items-center justify-between">
         {/* Search Input */}
-        <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+        <div className="relative w-full sm:w-80">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search creator (e.g. Ansem, Druski, Cobie)..."
-            className="w-full pl-9 pr-8 py-2 bg-[#121215] border border-white/[0.08] rounded-xl text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]"
+            placeholder="Search creator (Ansem, Valkyrae, Druski)..."
+            className="w-full pl-9 pr-8 py-2 bg-[#121215] border border-white/[0.08] rounded-xl text-xs sm:text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]"
           />
           {searchQuery && (
             <button
@@ -84,14 +84,14 @@ export function LeaderboardControls({
           )}
         </div>
 
-        {/* Sort dropdown and CSV export button */}
-        <div className="flex items-center gap-2">
-          <div className="relative flex items-center bg-[#121215] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-zinc-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]">
-            <ArrowUpDown className="w-3.5 h-3.5 mr-2 text-zinc-500" />
+        {/* Sort dropdown and CSV export button on a clean 2-column row on mobile */}
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
+          <div className="relative flex-1 sm:flex-none flex items-center bg-[#121215] border border-white/[0.08] rounded-xl px-2.5 sm:px-3 py-2 text-xs text-zinc-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]">
+            <ArrowUpDown className="w-3.5 h-3.5 mr-1.5 sm:mr-2 text-zinc-500 shrink-0" />
             <select
               value={sortOption}
               onChange={(e) => onSortChange(e.target.value as SortOption)}
-              className="bg-transparent text-zinc-200 text-xs focus:outline-none cursor-pointer pr-1"
+              className="bg-transparent text-zinc-200 text-xs focus:outline-none cursor-pointer pr-1 w-full"
             >
               <option value="rank-asc" className="bg-[#121215]">
                 Rank (1 → 80)
@@ -106,7 +106,7 @@ export function LeaderboardControls({
                 Biggest Drop (-Δ)
               </option>
               <option value="abs-delta-desc" className="bg-[#121215]">
-                Absolute Volatility (|Δ|)
+                Volatility (|Δ|)
               </option>
               <option value="name-asc" className="bg-[#121215]">
                 Alphabetical (A-Z)
@@ -116,7 +116,7 @@ export function LeaderboardControls({
 
           <button
             onClick={onExportCsv}
-            className="flex items-center gap-1.5 px-3 py-2 bg-[#121215] hover:bg-white/[0.06] border border-white/[0.08] rounded-xl text-xs font-mono text-zinc-300 transition shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]"
+            className="flex items-center gap-1.5 px-3 py-2 bg-[#121215] hover:bg-white/[0.06] border border-white/[0.08] rounded-xl text-xs font-mono text-zinc-300 transition shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] shrink-0"
             title="Download visible creators as CSV"
           >
             <span>CSV</span>
@@ -125,17 +125,17 @@ export function LeaderboardControls({
       </div>
 
       {/* Bottom Bar: Categorical Filter Tabs + Quick Presets + Counter */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 pt-1">
-        <div className="flex items-center gap-1 overflow-x-auto max-w-full pb-1 lg:pb-0 scrollbar-none">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-2.5 pt-0.5">
+        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar max-w-full pb-1 lg:pb-0 whitespace-nowrap w-full lg:w-auto">
           {/* Main Filter Tabs */}
-          <div className="flex items-center bg-[#121215] border border-white/[0.08] p-1 rounded-xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]">
+          <div className="flex items-center bg-[#121215] border border-white/[0.08] p-1 rounded-xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)] shrink-0">
             {FILTER_TABS.map((tab) => {
               const isActive = selectedFilter === tab.id;
               return (
                 <button
                   key={tab.id}
                   onClick={() => onSelectFilter(tab.id)}
-                  className={`relative px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                  className={`relative px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition shrink-0 ${
                     isActive ? "text-white" : "text-zinc-400 hover:text-zinc-200"
                   }`}
                 >
@@ -153,13 +153,13 @@ export function LeaderboardControls({
           </div>
 
           {/* Divider between Filter Tabs and Presets */}
-          <div className="h-4 w-[1px] bg-white/10 mx-2 shrink-0" />
+          <div className="h-4 w-[1px] bg-white/10 mx-1.5 shrink-0" />
 
           {/* Inline Preset Chips */}
-          <div className="flex items-center gap-1 text-[11px] font-mono shrink-0">
+          <div className="flex items-center gap-1 text-[11px] font-mono shrink-0 whitespace-nowrap">
             <button
               onClick={() => onApplyPreset("ct-elite")}
-              className={`px-2.5 py-1 rounded-lg border transition ${
+              className={`px-2 sm:px-2.5 py-1 rounded-lg border transition ${
                 activePreset === "ct-elite"
                   ? "bg-white/10 text-white border-white/20 font-semibold"
                   : "border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04]"
@@ -169,7 +169,7 @@ export function LeaderboardControls({
             </button>
             <button
               onClick={() => onApplyPreset("high-volatility")}
-              className={`px-2.5 py-1 rounded-lg border transition ${
+              className={`px-2 sm:px-2.5 py-1 rounded-lg border transition ${
                 activePreset === "high-volatility"
                   ? "bg-white/10 text-white border-white/20 font-semibold"
                   : "border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04]"
@@ -179,7 +179,7 @@ export function LeaderboardControls({
             </button>
             <button
               onClick={() => onApplyPreset("top-10")}
-              className={`px-2.5 py-1 rounded-lg border transition ${
+              className={`px-2 sm:px-2.5 py-1 rounded-lg border transition ${
                 activePreset === "top-10"
                   ? "bg-white/10 text-white border-white/20 font-semibold"
                   : "border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04]"
@@ -189,7 +189,7 @@ export function LeaderboardControls({
             </button>
             <button
               onClick={() => onApplyPreset("contrarian-dips")}
-              className={`px-2.5 py-1 rounded-lg border transition ${
+              className={`px-2 sm:px-2.5 py-1 rounded-lg border transition ${
                 activePreset === "contrarian-dips"
                   ? "bg-white/10 text-white border-white/20 font-semibold"
                   : "border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04]"
@@ -201,7 +201,7 @@ export function LeaderboardControls({
         </div>
 
         {/* Total Count Indicator */}
-        <div className="text-xs text-zinc-500 font-mono shrink-0">
+        <div className="text-[11px] sm:text-xs text-zinc-500 font-mono shrink-0">
           Showing {totalFiltered} of {totalRaw} creators
         </div>
       </div>
