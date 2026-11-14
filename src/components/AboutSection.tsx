@@ -87,19 +87,9 @@ export function AboutSection() {
 
       {/* Technical Specifications Bar */}
       <div className="bg-surface/60 border border-surface-border rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono">
-        <div className="flex flex-wrap items-center gap-4 text-neutral-400">
-          <div>
-            <span className="text-neutral-500">Live Domain:</span>{" "}
-            <span className="text-white font-medium">motionradar.vercel.app</span>
-          </div>
-          <div>
-            <span className="text-neutral-500">Revalidation:</span>{" "}
-            <span className="text-emerald-400 font-medium">60s Edge Cached</span>
-          </div>
-          <div>
-            <span className="text-neutral-500">Data Model:</span>{" "}
-            <span className="text-neutral-200">Live + Offline Resilient Fixture</span>
-          </div>
+        <div className="flex items-center gap-2 text-neutral-400">
+          <span className="text-neutral-500">Data Model:</span>
+          <span className="text-neutral-200 font-medium">Live + Offline Resilient Fixture</span>
         </div>
 
         <a
