@@ -204,7 +204,7 @@ export function autoScoutBest5(creators: LeaderboardCreator[]): LeaderboardCreat
 
 /**
  * Generates the clean pre-filled tweet string for sharing on X:
- * Tags @motion, @callmogbot, #Mogathon, and includes live URL.
+ * Tags @motiongame_, @callmogbot, #Mogathon, and includes live URL.
  */
 export function generateLineupShareTweet(lineup: LeaderboardCreator[]): string {
   const totalDelta = computeLineupNetDelta(lineup);
@@ -227,7 +227,7 @@ export function generateLineupShareTweet(lineup: LeaderboardCreator[]): string {
     })
     .join("\n");
 
-  return `My 5-Creator @motion Roster scouted on MotionRadar 📡 (Net Velocity: ${formattedTotalDelta} Δ)
+  return `My 5-Creator @motiongame_ Roster scouted on MotionRadar 📡 (Net Velocity: ${formattedTotalDelta} Δ)
 
 ${picksText}
 

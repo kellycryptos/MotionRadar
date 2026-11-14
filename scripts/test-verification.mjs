@@ -186,7 +186,7 @@ const netVelocity = computeLineupNetDelta(testLineup);
 assert.equal(netVelocity, 7, "Net velocity should be 4 + 3 + 2 + 2 - 4 = 7");
 
 const tweet = generateLineupShareTweet(testLineup);
-assert.ok(tweet.includes("@motion"), "Tweet must mention @motion");
+assert.ok(tweet.includes("@motiongame_"), "Tweet must mention @motiongame_");
 assert.ok(tweet.includes("@callmogbot"), "Tweet must tag @callmogbot");
 assert.ok(tweet.includes("#Mogathon"), "Tweet must include #Mogathon");
 assert.ok(
