@@ -14,6 +14,7 @@ import { LeaderboardTable } from "./LeaderboardTable";
 import { AboutSection } from "./AboutSection";
 import { MogathonModal } from "./MogathonModal";
 import { LineupDock } from "./LineupDock";
+import { MotionBoardModal } from "./MotionBoardModal";
 import {
   LeaderboardCreator,
   LeaderboardResponse,
@@ -50,6 +51,7 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
   const [sortOption, setSortOption] = useState<SortOption>("rank-asc");
   const [activePreset, setActivePreset] = useState<string | null>(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isBoardOpen, setIsBoardOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   // 5-Creator Lineup state with localStorage persistence (motionradar_lineup)
@@ -272,6 +274,7 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
         isRefreshing={isPending}
         onRefresh={handleRefresh}
         onOpenShareModal={() => setIsShareModalOpen(true)}
+        onOpenBoard={() => setIsBoardOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -442,6 +445,13 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
         onClose={() => setIsShareModalOpen(false)}
         stats={stats}
         topMovers={topMovers}
+      />
+
+      {/* Motion Board Modal */}
+      <MotionBoardModal
+        isOpen={isBoardOpen}
+        onClose={() => setIsBoardOpen(false)}
+        creators={data.rows}
       />
     </div>
   );
