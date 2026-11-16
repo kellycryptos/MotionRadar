@@ -2,7 +2,7 @@
 
 import React from "react";
 import { LayoutGrid, Sparkles, ArrowRight } from "lucide-react";
-import { MotionBoardState, countTotalPicks } from "@/lib/board";
+import { MotionBoardState, countTotalPicks, sanitizeBoard } from "@/lib/board";
 
 interface MotionBoardBannerProps {
   board: MotionBoardState;
@@ -15,7 +15,8 @@ export function MotionBoardBanner({
   onOpenBoard,
   onLoadExample,
 }: MotionBoardBannerProps) {
-  const totalPicks = countTotalPicks(board);
+  const safe = sanitizeBoard(board);
+  const totalPicks = countTotalPicks(safe);
 
   return (
     <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-500/[0.07] via-[#121215] to-[#121215] border border-emerald-500/20 p-3.5 sm:p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
@@ -54,13 +55,13 @@ export function MotionBoardBanner({
             </button>
           ) : (
             <div className="hidden md:flex items-center gap-1.5 font-mono text-[11px] text-zinc-400 bg-white/[0.03] px-2.5 py-1 rounded-lg border border-white/[0.06]">
-              <span>🔥 {board["must-haves"].length}</span>
+              <span>🔥 {(safe["must-haves"] || []).length}</span>
               <span>•</span>
-              <span>💎 {board["value-picks"].length}</span>
+              <span>💎 {(safe["value-picks"] || []).length}</span>
               <span>•</span>
-              <span>⚡ {board["sleepers"].length}</span>
+              <span>⚡ {(safe["sleepers"] || []).length}</span>
               <span>•</span>
-              <span>⚠️ {board["pass"].length}</span>
+              <span>⚠️ {(safe["pass"] || []).length}</span>
             </div>
           )}
 

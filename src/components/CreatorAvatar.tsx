@@ -28,6 +28,7 @@ const GRADIENT_PALETTES = [
 ];
 
 function getNameHash(str: string): number {
+  if (!str || typeof str !== "string") return 0;
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     hash = (hash << 5) - hash + str.charCodeAt(i);
@@ -39,7 +40,8 @@ function getNameHash(str: string): number {
 /**
  * Resilient CreatorAvatar component for MotionRadar:
  * - Deterministic, high-contrast gradient initials styling (zero broken UI states)
- * - Transparent lazy photo loading with instant graceful fallback on network / CDN failures
+ * - Safe photo loading with instant graceful fallback on network / CDN failures
+ * - Zero state mutations during render body for 100% React 19 safety
  */
 export function CreatorAvatar({
   name,
@@ -50,24 +52,18 @@ export function CreatorAvatar({
   className,
   alt,
 }: CreatorAvatarProps) {
-  const resolvedName = creator?.name || name || "";
+  const resolvedName = String(creator?.name || name || "");
   const resolvedHandle =
     handle ||
     creator?.handle ||
     getCreatorHandle(creator || { name, xUrl }) ||
-    (propInitials ? getCreatorHandle(propInitials) : undefined);
+    (typeof propInitials === "string" ? getCreatorHandle(propInitials) : undefined);
 
   const displayInitials = getInitials(resolvedName, propInitials);
   const altText = alt || resolvedName || (resolvedHandle ? `@${resolvedHandle}` : "Creator avatar");
 
-  const [hasImageError, setHasImageError] = useState(false);
-  const [currentHandle, setCurrentHandle] = useState<string | undefined>(resolvedHandle);
-
-  // Reset error state if handle changes
-  if (currentHandle !== resolvedHandle) {
-    setCurrentHandle(resolvedHandle);
-    setHasImageError(false);
-  }
+  const [failedHandle, setFailedHandle] = useState<string | null>(null);
+  const isImageFailed = Boolean(resolvedHandle && failedHandle === resolvedHandle);
 
   const palette = useMemo(() => {
     const idx = getNameHash(resolvedName || "Motion") % GRADIENT_PALETTES.length;
@@ -81,7 +77,7 @@ export function CreatorAvatar({
   const imgClasses = `rounded-full object-cover border border-white/10 shrink-0 bg-[#18181C] ${baseSize} ${className || ""}`.trim();
 
   // If handle is present and hasn't errored, attempt unavatar
-  if (resolvedHandle && !hasImageError) {
+  if (resolvedHandle && !isImageFailed) {
     const photoUrl = `https://unavatar.io/x/${resolvedHandle}`;
 
     return (
@@ -94,7 +90,9 @@ export function CreatorAvatar({
           loading="lazy"
           decoding="async"
           referrerPolicy="no-referrer"
-          onError={() => setHasImageError(true)}
+          onError={() => {
+            if (resolvedHandle) setFailedHandle(resolvedHandle);
+          }}
           className={imgClasses}
         />
       </div>

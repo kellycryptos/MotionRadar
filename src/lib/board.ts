@@ -95,12 +95,79 @@ export function createEmptyBoard(): MotionBoardState {
   };
 }
 
-export function countTotalPicks(board: MotionBoardState): number {
+/**
+ * Robust sanitizer ensuring board state always contains all 4 tiers as valid arrays.
+ * Handles old formats, partial objects, null/undefined, and migrations seamlessly.
+ */
+export function sanitizeBoard(raw: unknown): MotionBoardState {
+  const safeBoard: MotionBoardState = createEmptyBoard();
+
+  if (!raw || typeof raw !== "object") {
+    return safeBoard;
+  }
+
+  // Handle old array format: [ { creator: {...}, tier: 'must', thesis: '...' } ]
+  if (Array.isArray(raw)) {
+    const tierMap: Record<string, BoardTierId> = {
+      must: "must-haves",
+      "must-haves": "must-haves",
+      value: "value-picks",
+      "value-picks": "value-picks",
+      sleeper: "sleepers",
+      sleepers: "sleepers",
+      pass: "pass",
+    };
+    for (const item of raw) {
+      if (item && item.creator && item.creator.id) {
+        const targetTier = tierMap[item.tier] || "must-haves";
+        safeBoard[targetTier].push({
+          creatorId: String(item.creator.id),
+          name: String(item.creator.name || ""),
+          position: Number(item.creator.position || 0),
+          delta: Number(item.creator.delta || 0),
+          handle: item.creator.handle ? String(item.creator.handle) : undefined,
+          thesis: String(item.thesis || ""),
+        });
+      }
+    }
+    return safeBoard;
+  }
+
+  // Handle object format: ensure all 4 tiers exist and are arrays
+  const record = raw as Record<string, unknown>;
+  const tierIds: BoardTierId[] = ["must-haves", "value-picks", "sleepers", "pass"];
+
+  for (const tierId of tierIds) {
+    const rawList = record[tierId];
+    if (Array.isArray(rawList)) {
+      safeBoard[tierId] = rawList
+        .filter((item) => item && typeof item === "object" && Boolean((item as Record<string, unknown>).creatorId))
+        .map((p) => {
+          const pick = p as Record<string, unknown>;
+          return {
+            creatorId: String(pick.creatorId || ""),
+            name: String(pick.name || ""),
+            position: Number(pick.position || 0),
+            delta: Number(pick.delta || 0),
+            handle: pick.handle ? String(pick.handle) : undefined,
+            thesis: String(pick.thesis || ""),
+          };
+        });
+    } else {
+      safeBoard[tierId] = [];
+    }
+  }
+
+  return safeBoard;
+}
+
+export function countTotalPicks(board?: MotionBoardState | null): number {
+  if (!board) return 0;
   return (
-    board["must-haves"].length +
-    board["value-picks"].length +
-    board["sleepers"].length +
-    board["pass"].length
+    (board["must-haves"]?.length || 0) +
+    (board["value-picks"]?.length || 0) +
+    (board["sleepers"]?.length || 0) +
+    (board["pass"]?.length || 0)
   );
 }
 
@@ -208,22 +275,19 @@ export function syncBoardWithLiveData(
   board: MotionBoardState,
   liveCreators: LeaderboardCreator[]
 ): MotionBoardState {
+  const safeBoard = sanitizeBoard(board);
   const map = new Map<string, LeaderboardCreator>();
-  for (const c of liveCreators) {
+  for (const c of liveCreators || []) {
     map.set(c.id, c);
-    map.set(c.name.toLowerCase().trim(), c);
+    if (c.name) map.set(c.name.toLowerCase().trim(), c);
   }
 
-  const next: MotionBoardState = {
-    "must-haves": [],
-    "value-picks": [],
-    "sleepers": [],
-    "pass": [],
-  };
+  const next = createEmptyBoard();
 
-  (Object.keys(board) as BoardTierId[]).forEach((tierId) => {
-    next[tierId] = board[tierId].map((pick) => {
-      const match = map.get(pick.creatorId) || map.get(pick.name.toLowerCase().trim());
+  const tierIds: BoardTierId[] = ["must-haves", "value-picks", "sleepers", "pass"];
+  tierIds.forEach((tierId) => {
+    next[tierId] = (safeBoard[tierId] || []).map((pick) => {
+      const match = map.get(pick.creatorId) || (pick.name ? map.get(pick.name.toLowerCase().trim()) : undefined);
       if (match) {
         return {
           ...pick,
@@ -253,7 +317,7 @@ export function generateSuggestedBoard(
     limit: number
   ): LeaderboardCreator[] => {
     const results: LeaderboardCreator[] = [];
-    for (const c of creators) {
+    for (const c of creators || []) {
       if (!usedIds.has(c.id) && predicate(c)) {
         results.push(c);
         usedIds.add(c.id);
@@ -264,7 +328,7 @@ export function generateSuggestedBoard(
   };
 
   // 1. Must-Haves: Top gainers (delta >= 3) or top 5 anchor
-  const topGainers = [...creators]
+  const topGainers = [...(creators || [])]
     .filter((c) => c.delta > 0)
     .sort((a, b) => b.delta - a.delta);
 
@@ -274,7 +338,7 @@ export function generateSuggestedBoard(
   );
 
   // 2. Value Picks: Contrarian dips (delta < 0, rank <= 50) and CT discount
-  const dipCandidates = [...creators]
+  const dipCandidates = [...(creators || [])]
     .filter((c) => c.delta < 0 && c.position <= 50)
     .sort((a, b) => a.delta - b.delta);
 
@@ -321,6 +385,7 @@ export function generateBoardShareTweet(
   board: MotionBoardState,
   options?: { shareUrl?: string }
 ): string {
+  const safe = sanitizeBoard(board);
   const sections: string[] = [];
 
   const tierEmojiMap: Record<BoardTierId, { emoji: string; title: string }> = {
@@ -331,7 +396,7 @@ export function generateBoardShareTweet(
   };
 
   (Object.keys(tierEmojiMap) as BoardTierId[]).forEach((tierId) => {
-    const picks = board[tierId];
+    const picks = safe[tierId] || [];
     if (picks.length > 0) {
       const { emoji, title } = tierEmojiMap[tierId];
       const items = picks
@@ -358,25 +423,56 @@ ${url}
 cc @callmogbot #Mogathon`;
 }
 
+// UTF-8 safe base64 helper that never throws Latin1 DOMException
+function safeBase64Encode(str: string): string {
+  try {
+    if (typeof window !== "undefined") {
+      const utf8Bytes = new TextEncoder().encode(str);
+      let binary = "";
+      for (let i = 0; i < utf8Bytes.length; i++) {
+        binary += String.fromCharCode(utf8Bytes[i]);
+      }
+      return window.btoa(binary);
+    }
+    return Buffer.from(str, "utf-8").toString("base64");
+  } catch {
+    return "";
+  }
+}
+
+function safeBase64Decode(b64: string): string {
+  try {
+    if (typeof window !== "undefined") {
+      const binary = window.atob(b64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      return new TextDecoder().decode(bytes);
+    }
+    return Buffer.from(b64, "base64").toString("utf-8");
+  } catch {
+    return "";
+  }
+}
+
 /**
  * Compact serialization for query parameter sharing:
- * Encodes board state into URL-safe base64 string.
+ * Encodes board state into URL-safe base64 string without Latin1 crashes.
  */
 export function encodeBoardToUrlParam(board: MotionBoardState): string {
   try {
+    const safe = sanitizeBoard(board);
     const compact: Record<string, [string, string][]> = {
-      mh: board["must-haves"].map((p) => [p.creatorId, p.thesis || ""]),
-      vp: board["value-picks"].map((p) => [p.creatorId, p.thesis || ""]),
-      sl: board["sleepers"].map((p) => [p.creatorId, p.thesis || ""]),
-      pa: board["pass"].map((p) => [p.creatorId, p.thesis || ""]),
+      mh: (safe["must-haves"] || []).map((p) => [p.creatorId, p.thesis || ""]),
+      vp: (safe["value-picks"] || []).map((p) => [p.creatorId, p.thesis || ""]),
+      sl: (safe["sleepers"] || []).map((p) => [p.creatorId, p.thesis || ""]),
+      pa: (safe["pass"] || []).map((p) => [p.creatorId, p.thesis || ""]),
     };
 
     const jsonStr = JSON.stringify(compact);
-    // Base64 encode safe for browser & Node
-    if (typeof window !== "undefined" && typeof window.btoa === "function") {
-      return encodeURIComponent(window.btoa(unescape(encodeURIComponent(jsonStr))));
-    }
-    return encodeURIComponent(Buffer.from(jsonStr).toString("base64"));
+    const b64 = safeBase64Encode(jsonStr);
+    return encodeURIComponent(b64);
   } catch {
     return "";
   }
@@ -390,21 +486,18 @@ export function decodeBoardFromUrlParam(
   liveCreators: LeaderboardCreator[]
 ): MotionBoardState | null {
   try {
-    let jsonStr = "";
+    if (!param) return null;
     const decodedParam = decodeURIComponent(param);
-    if (typeof window !== "undefined" && typeof window.atob === "function") {
-      jsonStr = decodeURIComponent(escape(window.atob(decodedParam)));
-    } else {
-      jsonStr = Buffer.from(decodedParam, "base64").toString("utf-8");
-    }
+    const jsonStr = safeBase64Decode(decodedParam);
+    if (!jsonStr) return null;
 
     const compact = JSON.parse(jsonStr);
     if (!compact || typeof compact !== "object") return null;
 
     const creatorMap = new Map<string, LeaderboardCreator>();
-    for (const c of liveCreators) {
+    for (const c of liveCreators || []) {
       creatorMap.set(c.id, c);
-      creatorMap.set(c.name.toLowerCase().trim(), c);
+      if (c.name) creatorMap.set(c.name.toLowerCase().trim(), c);
     }
 
     const board = createEmptyBoard();
@@ -439,7 +532,7 @@ export function decodeBoardFromUrlParam(
       }
     }
 
-    return countTotalPicks(board) > 0 ? board : null;
+    return countTotalPicks(board) > 0 ? sanitizeBoard(board) : null;
   } catch {
     return null;
   }

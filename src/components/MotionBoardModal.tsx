@@ -27,6 +27,7 @@ import {
   generateSuggestedBoard,
   generateBoardShareTweet,
   encodeBoardToUrlParam,
+  sanitizeBoard,
 } from "@/lib/board";
 import { CreatorAvatar } from "./CreatorAvatar";
 
@@ -66,30 +67,47 @@ export function MotionBoardModal({
   const [copiedText, setCopiedText] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  const totalPicks = useMemo(() => countTotalPicks(board), [board]);
+  // Guarantee clean and safe board state
+  const safeBoard = useMemo(() => sanitizeBoard(board), [board]);
+  const totalPicks = useMemo(() => countTotalPicks(safeBoard), [safeBoard]);
 
   // Set of all creator IDs currently in ANY tier of the board
   const draftedCreatorIds = useMemo(() => {
     const ids = new Set<string>();
-    (Object.keys(board) as BoardTierId[]).forEach((tierId) => {
-      board[tierId].forEach((p) => ids.add(p.creatorId));
+    const tierIds: BoardTierId[] = ["must-haves", "value-picks", "sleepers", "pass"];
+    tierIds.forEach((tierId) => {
+      const picks = safeBoard[tierId] || [];
+      picks.forEach((p) => {
+        if (p?.creatorId) ids.add(p.creatorId);
+      });
     });
     return ids;
-  }, [board]);
+  }, [safeBoard]);
 
   // Filtered creators for the add-picker
   const searchResults = useMemo(() => {
-    const q = searchQuery.toLowerCase().trim();
-    return allCreators
+    const q = (searchQuery || "").toLowerCase().trim();
+    return (allCreators || [])
       .filter((c) => {
         if (!q) return true;
-        return (
-          c.name.toLowerCase().includes(q) ||
-          (c.handle && c.handle.toLowerCase().includes(q))
-        );
+        const nameMatch = c.name && c.name.toLowerCase().includes(q);
+        const handleMatch = c.handle && c.handle.toLowerCase().includes(q);
+        return Boolean(nameMatch || handleMatch);
       })
       .slice(0, 10);
   }, [allCreators, searchQuery]);
+
+  // Generate share URL with safe try/catch
+  const shareBoardUrl = useMemo(() => {
+    if (typeof window === "undefined") return "https://motionradar.vercel.app/";
+    try {
+      const param = encodeBoardToUrlParam(safeBoard);
+      if (!param) return "https://motionradar.vercel.app/";
+      return `${window.location.origin}/?board=${param}`;
+    } catch {
+      return "https://motionradar.vercel.app/";
+    }
+  }, [safeBoard]);
 
   if (!isOpen) return null;
 
@@ -98,7 +116,8 @@ export function MotionBoardModal({
     const tierConfig = BOARD_TIERS.find((t) => t.id === tierId);
     if (!tierConfig) return;
 
-    if (board[tierId].length >= tierConfig.max) return;
+    const currentPicks = safeBoard[tierId] || [];
+    if (currentPicks.length >= tierConfig.max) return;
     if (draftedCreatorIds.has(creator.id)) return;
 
     const suggested = getSuggestedTheses(creator, tierId);
@@ -111,24 +130,28 @@ export function MotionBoardModal({
       thesis: suggested[0] || "",
     };
 
-    onUpdateBoard({
-      ...board,
-      [tierId]: [...board[tierId], newPick],
-    });
+    onUpdateBoard(
+      sanitizeBoard({
+        ...safeBoard,
+        [tierId]: [...currentPicks, newPick],
+      })
+    );
 
     setSearchQuery("");
   };
 
   const handleRemovePick = (tierId: BoardTierId, creatorId: string) => {
-    onUpdateBoard({
-      ...board,
-      [tierId]: board[tierId].filter((p) => p.creatorId !== creatorId),
-    });
+    onUpdateBoard(
+      sanitizeBoard({
+        ...safeBoard,
+        [tierId]: (safeBoard[tierId] || []).filter((p) => p.creatorId !== creatorId),
+      })
+    );
     if (editingPickId === creatorId) setEditingPickId(null);
   };
 
   const handleMovePick = (tierId: BoardTierId, index: number, direction: "up" | "down") => {
-    const list = [...board[tierId]];
+    const list = [...(safeBoard[tierId] || [])];
     const targetIndex = direction === "up" ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= list.length) return;
 
@@ -136,47 +159,55 @@ export function MotionBoardModal({
     list[index] = list[targetIndex];
     list[targetIndex] = temp;
 
-    onUpdateBoard({
-      ...board,
-      [tierId]: list,
-    });
+    onUpdateBoard(
+      sanitizeBoard({
+        ...safeBoard,
+        [tierId]: list,
+      })
+    );
   };
 
   const handleUpdateThesis = (tierId: BoardTierId, creatorId: string, newThesis: string) => {
-    onUpdateBoard({
-      ...board,
-      [tierId]: board[tierId].map((p) =>
-        p.creatorId === creatorId ? { ...p, thesis: newThesis } : p
-      ),
-    });
+    onUpdateBoard(
+      sanitizeBoard({
+        ...safeBoard,
+        [tierId]: (safeBoard[tierId] || []).map((p) =>
+          p.creatorId === creatorId ? { ...p, thesis: newThesis } : p
+        ),
+      })
+    );
   };
 
   const handleMoveTier = (sourceTierId: BoardTierId, targetTierId: BoardTierId, pick: BoardPick) => {
     if (sourceTierId === targetTierId) return;
     const targetConfig = BOARD_TIERS.find((t) => t.id === targetTierId);
-    if (!targetConfig || board[targetTierId].length >= targetConfig.max) return;
+    const targetPicks = safeBoard[targetTierId] || [];
+    if (!targetConfig || targetPicks.length >= targetConfig.max) return;
 
-    const updatedThesis = getSuggestedTheses(
-      {
-        id: pick.creatorId,
-        name: pick.name,
-        position: pick.position,
-        delta: pick.delta,
-        isNew: false,
-      },
-      targetTierId
-    )[0] || pick.thesis;
+    const updatedThesis =
+      getSuggestedTheses(
+        {
+          id: pick.creatorId,
+          name: pick.name,
+          position: pick.position,
+          delta: pick.delta,
+          isNew: false,
+        },
+        targetTierId
+      )[0] || pick.thesis;
 
-    onUpdateBoard({
-      ...board,
-      [sourceTierId]: board[sourceTierId].filter((p) => p.creatorId !== pick.creatorId),
-      [targetTierId]: [...board[targetTierId], { ...pick, thesis: updatedThesis }],
-    });
+    onUpdateBoard(
+      sanitizeBoard({
+        ...safeBoard,
+        [sourceTierId]: (safeBoard[sourceTierId] || []).filter((p) => p.creatorId !== pick.creatorId),
+        [targetTierId]: [...targetPicks, { ...pick, thesis: updatedThesis }],
+      })
+    );
   };
 
   const handleSuggestBoard = () => {
-    const suggested = generateSuggestedBoard(allCreators);
-    onUpdateBoard(suggested);
+    const suggested = generateSuggestedBoard(allCreators || []);
+    onUpdateBoard(sanitizeBoard(suggested));
   };
 
   const handleClearBoard = () => {
@@ -189,16 +220,8 @@ export function MotionBoardModal({
     setEditingPickId(null);
   };
 
-  // Generate share URL and text
-  const shareBoardUrl = useMemo(() => {
-    if (typeof window === "undefined") return "https://motionradar.vercel.app/";
-    const param = encodeBoardToUrlParam(board);
-    if (!param) return "https://motionradar.vercel.app/";
-    return `${window.location.origin}/?board=${param}`;
-  }, [board]);
-
   const handleOpenSharePreview = () => {
-    const tweet = generateBoardShareTweet(board, { shareUrl: shareBoardUrl });
+    const tweet = generateBoardShareTweet(safeBoard, { shareUrl: shareBoardUrl });
     setCustomTweetText(tweet);
     setIsShareViewOpen(true);
   };
@@ -322,7 +345,7 @@ export function MotionBoardModal({
               </div>
               <button
                 onClick={handleCopyBoardLink}
-                className="text-[11px] text-emerald-400 hover:text-emerald-300 font-medium shrink-0 flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20"
+                className="text-[11px] text-emerald-400 hover:text-emerald-300 font-medium shrink-0 flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 cursor-pointer"
               >
                 {copiedLink ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                 <span>{copiedLink ? "Copied" : "Copy Link"}</span>
@@ -359,7 +382,7 @@ export function MotionBoardModal({
             <div className="sm:hidden flex items-center gap-1 px-3 py-2 border-b border-white/[0.08] bg-[#0E0E11] overflow-x-auto no-scrollbar">
               {BOARD_TIERS.map((tier) => {
                 const isActive = activeTierId === tier.id;
-                const count = board[tier.id].length;
+                const count = (safeBoard[tier.id] || []).length;
                 return (
                   <button
                     key={tier.id}
@@ -446,14 +469,14 @@ export function MotionBoardModal({
                           ) : (
                             <div className="flex items-center gap-1 shrink-0">
                               {BOARD_TIERS.map((tier) => {
-                                const isFull = board[tier.id].length >= tier.max;
+                                const isFull = (safeBoard[tier.id] || []).length >= tier.max;
                                 return (
                                   <button
                                     key={tier.id}
                                     onClick={() => handleAddCreatorToTier(creator, tier.id)}
                                     disabled={isFull}
                                     className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-medium transition cursor-pointer flex items-center gap-0.5 disabled:opacity-30 disabled:pointer-events-none ${tier.bgTint} ${tier.accentColor} border ${tier.borderColor}`}
-                                    title={`Add to ${tier.title} (${board[tier.id].length}/${tier.max})`}
+                                    title={`Add to ${tier.title} (${(safeBoard[tier.id] || []).length}/${tier.max})`}
                                   >
                                     <span>{tier.emoji}</span>
                                     <span className="hidden md:inline">{tier.shortTitle}</span>
@@ -474,7 +497,7 @@ export function MotionBoardModal({
             <div className="flex-1 p-3 sm:p-5 overflow-y-auto">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 h-full">
                 {BOARD_TIERS.map((tier) => {
-                  const picks = board[tier.id];
+                  const picks = safeBoard[tier.id] || [];
                   const isCurrentOnMobile = activeTierId === tier.id;
 
                   return (
@@ -568,7 +591,7 @@ export function MotionBoardModal({
                                     <button
                                       onClick={() => handleMovePick(tier.id, index, "up")}
                                       disabled={index === 0}
-                                      className="text-zinc-500 hover:text-zinc-200 disabled:opacity-20 p-0.5"
+                                      className="text-zinc-500 hover:text-zinc-200 disabled:opacity-20 p-0.5 cursor-pointer"
                                       title="Move Up"
                                     >
                                       <ChevronUp className="w-3 h-3" />
@@ -576,14 +599,14 @@ export function MotionBoardModal({
                                     <button
                                       onClick={() => handleMovePick(tier.id, index, "down")}
                                       disabled={index === picks.length - 1}
-                                      className="text-zinc-500 hover:text-zinc-200 disabled:opacity-20 p-0.5"
+                                      className="text-zinc-500 hover:text-zinc-200 disabled:opacity-20 p-0.5 cursor-pointer"
                                       title="Move Down"
                                     >
                                       <ChevronDown className="w-3 h-3" />
                                     </button>
                                     <button
                                       onClick={() => handleRemovePick(tier.id, pick.creatorId)}
-                                      className="text-zinc-500 hover:text-rose-400 p-0.5 ml-0.5"
+                                      className="text-zinc-500 hover:text-rose-400 p-0.5 ml-0.5 cursor-pointer"
                                       title="Remove from tier"
                                     >
                                       <Trash2 className="w-3 h-3" />
@@ -618,7 +641,7 @@ export function MotionBoardModal({
                                               handleUpdateThesis(tier.id, pick.creatorId, sug);
                                               setEditingPickId(null);
                                             }}
-                                            className="text-[9px] font-mono text-left px-1.5 py-0.5 rounded bg-white/[0.04] hover:bg-white/[0.08] text-zinc-400 hover:text-zinc-200 border border-white/[0.06] transition"
+                                            className="text-[9px] font-mono text-left px-1.5 py-0.5 rounded bg-white/[0.04] hover:bg-white/[0.08] text-zinc-400 hover:text-zinc-200 border border-white/[0.06] transition cursor-pointer"
                                             title="Click to apply"
                                           >
                                             {sug}
@@ -629,21 +652,24 @@ export function MotionBoardModal({
                                   )}
                                 </div>
 
-                                {/* Quick Switch Tier dropdown/menu */}
+                                {/* Quick Switch Tier menu */}
                                 <div className="pt-1 flex items-center justify-between text-[10px] font-mono text-zinc-500">
                                   <span>Move to:</span>
                                   <div className="flex items-center gap-1">
-                                    {BOARD_TIERS.filter((t) => t.id !== tier.id).map((other) => (
-                                      <button
-                                        key={other.id}
-                                        onClick={() => handleMoveTier(tier.id, other.id, pick)}
-                                        disabled={board[other.id].length >= other.max}
-                                        className="text-[10px] hover:text-zinc-200 transition disabled:opacity-20 cursor-pointer"
-                                        title={`Move to ${other.title}`}
-                                      >
-                                        {other.emoji}
-                                      </button>
-                                    ))}
+                                    {BOARD_TIERS.filter((t) => t.id !== tier.id).map((other) => {
+                                      const otherCount = (safeBoard[other.id] || []).length;
+                                      return (
+                                        <button
+                                          key={other.id}
+                                          onClick={() => handleMoveTier(tier.id, other.id, pick)}
+                                          disabled={otherCount >= other.max}
+                                          className="text-[10px] hover:text-zinc-200 transition disabled:opacity-20 cursor-pointer"
+                                          title={`Move to ${other.title} (${otherCount}/${other.max})`}
+                                        >
+                                          {other.emoji}
+                                        </button>
+                                      );
+                                    })}
                                   </div>
                                 </div>
                               </div>

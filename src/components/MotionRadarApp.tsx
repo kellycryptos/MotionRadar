@@ -33,6 +33,7 @@ import {
   BoardTierId,
   MotionBoardState,
   createEmptyBoard,
+  sanitizeBoard,
   BOARD_STORAGE_KEY,
   syncBoardWithLiveData,
   generateSuggestedBoard,
@@ -45,13 +46,65 @@ interface MotionRadarAppProps {
   initialResult: FetchResult;
 }
 
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+}
+
+class SafeErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error("MotionRadar caught an error:", error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        this.props.fallback || (
+          <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs text-rose-300 flex items-center justify-between">
+            <span>Unable to render component.</span>
+            <button
+              onClick={() => this.setState({ hasError: false })}
+              className="text-white underline font-semibold ml-2 cursor-pointer"
+            >
+              Reset
+            </button>
+          </div>
+        )
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
-  const [data, setData] = useState<LeaderboardResponse>(initialResult.data);
+  const [data, setData] = useState<LeaderboardResponse>(
+    initialResult?.data || {
+      asOf: "",
+      capturedAt: "",
+      baselineCapturedAt: "",
+      history: "",
+      rows: [],
+    }
+  );
   const [isLive, setIsLive] = useState<boolean>(!initialResult.isFallback);
   const [lastUpdated, setLastUpdated] = useState<string>(
-    initialResult.data.baselineCapturedAt ||
-      initialResult.data.capturedAt ||
-      initialResult.fetchedAt
+    initialResult?.data?.baselineCapturedAt ||
+      initialResult?.data?.capturedAt ||
+      initialResult?.fetchedAt ||
+      new Date().toISOString()
   );
   const [errorMessage, setErrorMessage] = useState<string | undefined>(
     initialResult.error
@@ -89,20 +142,21 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
         const params = new URLSearchParams(window.location.search);
         const boardParam = params.get("board");
         if (boardParam) {
-          const decoded = decodeBoardFromUrlParam(boardParam, initialResult.data.rows);
-          if (decoded) return decoded;
+          const decoded = decodeBoardFromUrlParam(boardParam, initialResult?.data?.rows || []);
+          if (decoded) return sanitizeBoard(decoded);
         }
 
         const saved = localStorage.getItem(BOARD_STORAGE_KEY);
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (
-            parsed &&
-            typeof parsed === "object" &&
-            Array.isArray(parsed["must-haves"])
-          ) {
-            return parsed;
-          }
+          return sanitizeBoard(parsed);
+        }
+
+        // Also check legacy key if user visited previous version
+        const legacy = localStorage.getItem("motionradar_board");
+        if (legacy) {
+          const parsedLegacy = JSON.parse(legacy);
+          return sanitizeBoard(parsedLegacy);
         }
       } catch {
         // fallback
@@ -114,14 +168,18 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
   // Check URL query param on mount and auto-open board if valid
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    const boardParam = params.get("board");
-    if (boardParam) {
-      const decoded = decodeBoardFromUrlParam(boardParam, data.rows);
-      if (decoded) {
-        setBoard(decoded);
-        setIsBoardModalOpen(true);
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const boardParam = params.get("board");
+      if (boardParam) {
+        const decoded = decodeBoardFromUrlParam(boardParam, data.rows || []);
+        if (decoded) {
+          setBoard(sanitizeBoard(decoded));
+          setIsBoardModalOpen(true);
+        }
       }
+    } catch {
+      // ignore
     }
   }, [data.rows]);
 
@@ -147,7 +205,7 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
   useEffect(() => {
     setLineup((prev) =>
       prev.map((item) => {
-        const updated = data.rows.find((r) => r.id === item.id);
+        const updated = (data.rows || []).find((r) => r.id === item.id);
         return updated || item;
       })
     );
@@ -155,7 +213,7 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
 
   // Keep board ranks and deltas up-to-date with live data
   useEffect(() => {
-    setBoard((prev) => syncBoardWithLiveData(prev, data.rows));
+    setBoard((prev) => syncBoardWithLiveData(prev, data.rows || []));
   }, [data.rows]);
 
   const lineupIds = useMemo(() => new Set(lineup.map((c) => c.id)), [lineup]);
@@ -172,9 +230,13 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
       "sleepers": "⚡",
       "pass": "⚠️",
     };
-    (Object.keys(board) as BoardTierId[]).forEach((tierId) => {
-      board[tierId].forEach((pick) => {
-        map.set(pick.creatorId, { tierId, emoji: emojis[tierId] });
+    const tierIds: BoardTierId[] = ["must-haves", "value-picks", "sleepers", "pass"];
+    tierIds.forEach((tierId) => {
+      const picks = board[tierId] || [];
+      picks.forEach((pick) => {
+        if (pick?.creatorId) {
+          map.set(pick.creatorId, { tierId, emoji: emojis[tierId] });
+        }
       });
     });
     return map;
@@ -204,17 +266,17 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
 
   // Compute stats over full dataset
   const stats: LeaderboardStats = useMemo(() => {
-    return computeLeaderboardStats(data.rows);
+    return computeLeaderboardStats(data.rows || []);
   }, [data.rows]);
 
   // Top movers for dedicated section
   const topMovers = useMemo(() => {
-    return getBiggestMovers(data.rows, 6);
+    return getBiggestMovers(data.rows || [], 6);
   }, [data.rows]);
 
   // Filter and sort creators
   const filteredCreators = useMemo(() => {
-    let list = [...data.rows];
+    let list = [...(data.rows || [])];
 
     // Filter by Preset
     if (activePreset === "ct-elite") {
@@ -349,19 +411,23 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
 
   // Balanced auto-scout roster: 2 Gainers, 2 CT Movers, 1 Contrarian Dip
   const handleAutoScout = () => {
-    const balanced = autoScoutBest5(data.rows);
+    const balanced = autoScoutBest5(data.rows || []);
     setLineup(balanced);
   };
 
   // Motion Board Handlers
   const handleLoadExampleBoard = () => {
-    const example = generateSuggestedBoard(data.rows);
-    setBoard(example);
+    const example = generateSuggestedBoard(data.rows || []);
+    setBoard(sanitizeBoard(example));
     setIsBoardModalOpen(true);
   };
 
   const handleOpenBoardForCreator = (_creator: LeaderboardCreator) => {
     setIsBoardModalOpen(true);
+  };
+
+  const handleUpdateBoard = (newBoard: MotionBoardState) => {
+    setBoard(sanitizeBoard(newBoard));
   };
 
   return (
@@ -419,11 +485,13 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
         </div>
 
         {/* Motion Board Discoverability Banner */}
-        <MotionBoardBanner
-          board={board}
-          onOpenBoard={() => setIsBoardModalOpen(true)}
-          onLoadExample={handleLoadExampleBoard}
-        />
+        <SafeErrorBoundary>
+          <MotionBoardBanner
+            board={board}
+            onOpenBoard={() => setIsBoardModalOpen(true)}
+            onLoadExample={handleLoadExampleBoard}
+          />
+        </SafeErrorBoundary>
 
         {/* Summary Stat Cards (Compact 2x2 Grid on Mobile, 4-Column on Desktop) */}
         <StatSummary stats={stats} onSelectCreator={handleSelectCreator} />
@@ -456,7 +524,7 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
             onSortChange={setSortOption}
             onExportCsv={handleExportCsv}
             totalFiltered={filteredCreators.length}
-            totalRaw={data.rows.length}
+            totalRaw={(data.rows || []).length}
             onApplyPreset={handleApplyPreset}
             activePreset={activePreset}
           />
@@ -559,14 +627,16 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
         topMovers={topMovers}
       />
 
-      {/* My Motion Board Tier Maker Modal */}
-      <MotionBoardModal
-        isOpen={isBoardModalOpen}
-        onClose={() => setIsBoardModalOpen(false)}
-        board={board}
-        onUpdateBoard={setBoard}
-        allCreators={data.rows}
-      />
+      {/* My Motion Board Tier Maker Modal with Safe Error Boundary */}
+      <SafeErrorBoundary>
+        <MotionBoardModal
+          isOpen={isBoardModalOpen}
+          onClose={() => setIsBoardModalOpen(false)}
+          board={board}
+          onUpdateBoard={handleUpdateBoard}
+          allCreators={data.rows || []}
+        />
+      </SafeErrorBoundary>
     </div>
   );
 }
