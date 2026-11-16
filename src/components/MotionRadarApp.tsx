@@ -15,6 +15,7 @@ import { AboutSection } from "./AboutSection";
 import { MogathonModal } from "./MogathonModal";
 import { LineupDock } from "./LineupDock";
 import { MotionBoardModal } from "./MotionBoardModal";
+import { MotionBoardBanner } from "./MotionBoardBanner";
 import {
   LeaderboardCreator,
   LeaderboardResponse,
@@ -28,6 +29,16 @@ import {
   FetchResult,
 } from "@/lib/api";
 import { exportLeaderboardToCsv } from "@/lib/utils";
+import {
+  BoardTierId,
+  MotionBoardState,
+  createEmptyBoard,
+  BOARD_STORAGE_KEY,
+  syncBoardWithLiveData,
+  generateSuggestedBoard,
+  countTotalPicks,
+  decodeBoardFromUrlParam,
+} from "@/lib/board";
 import { AlertCircle, BookOpen } from "lucide-react";
 
 interface MotionRadarAppProps {
@@ -51,7 +62,7 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
   const [sortOption, setSortOption] = useState<SortOption>("rank-asc");
   const [activePreset, setActivePreset] = useState<string | null>(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [isBoardOpen, setIsBoardOpen] = useState(false);
+  const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   // 5-Creator Lineup state with localStorage persistence (motionradar_lineup)
@@ -70,6 +81,50 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
     return [];
   });
 
+  // Motion Board State with URL import & localStorage persistence
+  const [board, setBoard] = useState<MotionBoardState>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        // Check URL query parameter first for public board link sharing
+        const params = new URLSearchParams(window.location.search);
+        const boardParam = params.get("board");
+        if (boardParam) {
+          const decoded = decodeBoardFromUrlParam(boardParam, initialResult.data.rows);
+          if (decoded) return decoded;
+        }
+
+        const saved = localStorage.getItem(BOARD_STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (
+            parsed &&
+            typeof parsed === "object" &&
+            Array.isArray(parsed["must-haves"])
+          ) {
+            return parsed;
+          }
+        }
+      } catch {
+        // fallback
+      }
+    }
+    return createEmptyBoard();
+  });
+
+  // Check URL query param on mount and auto-open board if valid
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const boardParam = params.get("board");
+    if (boardParam) {
+      const decoded = decodeBoardFromUrlParam(boardParam, data.rows);
+      if (decoded) {
+        setBoard(decoded);
+        setIsBoardModalOpen(true);
+      }
+    }
+  }, [data.rows]);
+
   // Persist lineup to localStorage
   useEffect(() => {
     try {
@@ -78,6 +133,15 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
       // ignore
     }
   }, [lineup]);
+
+  // Persist board to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(BOARD_STORAGE_KEY, JSON.stringify(board));
+    } catch {
+      // ignore
+    }
+  }, [board]);
 
   // Keep lineup data up-to-date if master data refreshes
   useEffect(() => {
@@ -89,8 +153,32 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
     );
   }, [data.rows]);
 
+  // Keep board ranks and deltas up-to-date with live data
+  useEffect(() => {
+    setBoard((prev) => syncBoardWithLiveData(prev, data.rows));
+  }, [data.rows]);
+
   const lineupIds = useMemo(() => new Set(lineup.map((c) => c.id)), [lineup]);
   const isLineupFull = lineup.length >= 5;
+
+  const boardPicksCount = useMemo(() => countTotalPicks(board), [board]);
+
+  // Map of creatorId -> tier info for instant indicators in tables & cards
+  const boardCreatorMap = useMemo(() => {
+    const map = new Map<string, { tierId: BoardTierId; emoji: string }>();
+    const emojis: Record<BoardTierId, string> = {
+      "must-haves": "🔥",
+      "value-picks": "💎",
+      "sleepers": "⚡",
+      "pass": "⚠️",
+    };
+    (Object.keys(board) as BoardTierId[]).forEach((tierId) => {
+      board[tierId].forEach((pick) => {
+        map.set(pick.creatorId, { tierId, emoji: emojis[tierId] });
+      });
+    });
+    return map;
+  }, [board]);
 
   // Dynamic refresh function
   const handleRefresh = async () => {
@@ -265,16 +353,28 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
     setLineup(balanced);
   };
 
+  // Motion Board Handlers
+  const handleLoadExampleBoard = () => {
+    const example = generateSuggestedBoard(data.rows);
+    setBoard(example);
+    setIsBoardModalOpen(true);
+  };
+
+  const handleOpenBoardForCreator = (_creator: LeaderboardCreator) => {
+    setIsBoardModalOpen(true);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-[#09090B] text-zinc-100 overflow-x-hidden w-full max-w-full">
-      {/* Sticky Header */}
+      {/* Sticky Header with Board Modal Trigger */}
       <Header
         lastUpdated={lastUpdated}
         isLive={isLive}
         isRefreshing={isPending}
         onRefresh={handleRefresh}
         onOpenShareModal={() => setIsShareModalOpen(true)}
-        onOpenBoard={() => setIsBoardOpen(true)}
+        onOpenBoardModal={() => setIsBoardModalOpen(true)}
+        boardPicksCount={boardPicksCount}
       />
 
       {/* Main Content Area */}
@@ -297,7 +397,7 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
             </div>
             <button
               onClick={handleRefresh}
-              className="text-amber-400 underline font-semibold hover:text-amber-300 shrink-0"
+              className="text-amber-400 underline font-semibold hover:text-amber-300 shrink-0 cursor-pointer"
             >
               Retry
             </button>
@@ -307,8 +407,7 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
         {/* Subtitle + How it Works link */}
         <div className="-mt-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <p className="text-xs sm:text-sm text-zinc-400">
-            Live cultural attention & momentum tracker for the Motion game
-            leaderboard.
+            Live cultural attention & momentum tracker for the Motion game leaderboard.
           </p>
           <Link
             href="/how-it-works"
@@ -319,16 +418,25 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
           </Link>
         </div>
 
+        {/* Motion Board Discoverability Banner */}
+        <MotionBoardBanner
+          board={board}
+          onOpenBoard={() => setIsBoardModalOpen(true)}
+          onLoadExample={handleLoadExampleBoard}
+        />
+
         {/* Summary Stat Cards (Compact 2x2 Grid on Mobile, 4-Column on Desktop) */}
         <StatSummary stats={stats} onSelectCreator={handleSelectCreator} />
 
-        {/* Asymmetric Bento Grid for Biggest Movers (Compact 2-Column on Mobile) */}
+        {/* Asymmetric Bento Grid for Biggest Movers */}
         <BiggestMovers
           movers={topMovers}
           onSelectCreator={handleSelectCreator}
           lineupIds={lineupIds}
           onToggleLineup={handleToggleLineup}
           isLineupFull={isLineupFull}
+          onOpenBoardForCreator={handleOpenBoardForCreator}
+          boardCreatorMap={boardCreatorMap}
         />
 
         {/* Unified Filter & Control Toolbar + High-Density Table */}
@@ -361,6 +469,8 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
             lineupIds={lineupIds}
             onToggleLineup={handleToggleLineup}
             isLineupFull={isLineupFull}
+            onOpenBoardForCreator={handleOpenBoardForCreator}
+            boardCreatorMap={boardCreatorMap}
           />
         </section>
 
@@ -377,6 +487,8 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
         onRemove={handleRemoveFromLineup}
         onClear={handleClearLineup}
         onAutoScout={handleAutoScout}
+        onOpenBoard={() => setIsBoardModalOpen(true)}
+        boardPicksCount={boardPicksCount}
       />
 
       {/* Bottom Footer Bar */}
@@ -447,11 +559,13 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
         topMovers={topMovers}
       />
 
-      {/* Motion Board Modal */}
+      {/* My Motion Board Tier Maker Modal */}
       <MotionBoardModal
-        isOpen={isBoardOpen}
-        onClose={() => setIsBoardOpen(false)}
-        creators={data.rows}
+        isOpen={isBoardModalOpen}
+        onClose={() => setIsBoardModalOpen(false)}
+        board={board}
+        onUpdateBoard={setBoard}
+        allCreators={data.rows}
       />
     </div>
   );

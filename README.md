@@ -103,6 +103,23 @@ Players draft a 5-person roster each week in Motion. MotionRadar includes an int
 - **1-Click Share to X**: Instantly opens a pre-formatted viral scouting breakdown tagging `@callmogbot`, `#Motion`, and `#Mogathon`.
 - **Instant Auto-Draft Presets**: 1-click auto-drafts the top 5 velocity gainers or top 5 Crypto/CT stars.
 
+### My Motion Board (Tier Maker & Personal Theses)
+Built for Mogathon, **My Motion Board** lets scouts and players build, tier, and publish their personal creator rankings using live leaderboard data:
+- **4 Strategic Tiers**:
+  - 🔥 **Must-Haves**: Core allocation anchors and explosive breakout momentum targets.
+  - 💎 **Value Picks**: High-conviction creators trading at oversold contrarian pullbacks.
+  - ⚡ **Sleepers**: Mid-tier climbers and CT natives building stealth attention under the radar.
+  - ⚠️ **Pass**: Overextended names or fading momentum with drawdown risk.
+- **One-Line Thesis & Contextual Templates**: Suggests tailored thesis starters based on real-time delta and tier (e.g. *"Breakout velocity with explosive market rotation"*, *"Contrarian dip; prime rebound setup"*).
+- **Interactive Management**: Move picks up/down, swap between tiers, or draft directly from the leaderboard table and mover cards.
+- **One-Click Auto-Suggest Board**: Instantly drafts a balanced board using live gainers, CT movers, contrarian dips, and fading names.
+- **Persistent & Portable**: Persisted locally in `localStorage` (`motionradar_motion_board_v1`) and synced with live leaderboard refreshes.
+- **Public Board Links & Share Preview**: Generates compact URL-safe query links (`?board=...`) and an editable share preview before publishing directly to X tagging `@callmogbot` and `@motiongame_ #Mogathon`.
+
+### Resilient Avatar Engine & Real-Time Pulse
+- **Zero Broken UI States**: Deterministic high-contrast gradient initials avatar engine with graceful photo fallbacks if CDNs fail.
+- **Fast 25s Cache Refresh**: Drop cache down to ~25s with a live ticking "Updated Xs ago" indicator that updates in real time.
+
 ### Analytical Scout Signals
 Provides actionable scouting theses beyond raw numbers:
 - **🚀 Breakout Velocity**: Creators moving $\ge +3$ spots with rapid attention rotation.

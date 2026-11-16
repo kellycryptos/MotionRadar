@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { ArrowUp, ArrowDown, ExternalLink, Sparkles, Plus, Check } from "lucide-react";
+import { ArrowUp, ArrowDown, ExternalLink, Sparkles, Plus, Check, LayoutGrid } from "lucide-react";
 import { LeaderboardCreator } from "@/types/leaderboard";
+import { BoardTierId } from "@/lib/board";
 import { isCryptoCreator, getCryptoCreatorInfo } from "@/lib/crypto-creators";
 import { getScoutSignal } from "@/lib/scout-signals";
 import { SortOption } from "./LeaderboardControls";
@@ -16,6 +17,8 @@ interface LeaderboardTableProps {
   lineupIds?: Set<string>;
   onToggleLineup?: (creator: LeaderboardCreator) => void;
   isLineupFull?: boolean;
+  onOpenBoardForCreator?: (creator: LeaderboardCreator) => void;
+  boardCreatorMap?: Map<string, { tierId: BoardTierId; emoji: string }>;
 }
 
 export function LeaderboardTable({
@@ -26,6 +29,8 @@ export function LeaderboardTable({
   lineupIds = new Set(),
   onToggleLineup,
   isLineupFull = false,
+  onOpenBoardForCreator,
+  boardCreatorMap,
 }: LeaderboardTableProps) {
   if (creators.length === 0) {
     return (
@@ -109,9 +114,9 @@ export function LeaderboardTable({
                 Category
               </th>
 
-              {/* Roster Draft Action Column on the far right */}
-              <th className="py-0 px-2.5 sm:px-4 font-semibold text-right w-16 sm:w-28 align-middle shrink-0">
-                Lineup
+              {/* Roster & Board Draft Action Column on the far right */}
+              <th className="py-0 px-2.5 sm:px-4 font-semibold text-right w-28 sm:w-44 align-middle shrink-0">
+                Actions
               </th>
             </tr>
           </thead>
@@ -126,6 +131,7 @@ export function LeaderboardTable({
               const ctInfo = getCryptoCreatorInfo(creator.name);
               const signal = getScoutSignal(creator);
               const isInLineup = lineupIds.has(creator.id);
+              const boardEntry = boardCreatorMap?.get(creator.id);
 
               const isTop1 = creator.position === 1;
               const isTop2 = creator.position === 2;
@@ -148,95 +154,103 @@ export function LeaderboardTable({
                           #1
                         </span>
                       ) : isTop2 ? (
-                        <span className="bg-zinc-300/10 text-zinc-300 border border-zinc-300/20 px-1.5 sm:px-2 py-0.5 rounded text-xs font-mono font-bold">
+                        <span className="bg-zinc-300/10 text-zinc-300 border border-zinc-400/20 px-1.5 sm:px-2 py-0.5 rounded text-xs font-mono font-bold">
                           #2
                         </span>
                       ) : isTop3 ? (
-                        <span className="bg-amber-700/10 text-amber-500 border border-amber-600/20 px-1.5 sm:px-2 py-0.5 rounded text-xs font-mono font-bold">
+                        <span className="bg-amber-700/15 text-amber-600 border border-amber-600/20 px-1.5 sm:px-2 py-0.5 rounded text-xs font-mono font-bold">
                           #3
                         </span>
                       ) : (
-                        <span className="text-xs font-mono text-zinc-400 px-1 py-0.5">
+                        <span className="text-zinc-500 text-xs font-mono">
                           #{creator.position}
                         </span>
                       )}
                     </div>
                   </td>
 
-                  {/* Creator Column: Avatar + Name + Scout Signal Badge */}
+                  {/* Creator Name + Avatar + X link + Badges */}
                   <td className="py-0 px-2.5 sm:px-4 align-middle">
-                    <div className="flex items-center gap-2 max-w-xl">
-                      {/* 28px Circular Avatar */}
-                      <CreatorAvatar creator={creator} />
+                    <div className="flex items-center gap-2 sm:gap-2.5">
+                      <CreatorAvatar creator={creator} className="w-7 h-7 shrink-0" />
 
-                      {/* Name and Inline Badges */}
-                      <div className="flex items-center gap-1.5 truncate min-w-0">
-                        <button
-                          onClick={() => onSelectCreator(creator.name)}
-                          className="font-medium text-white group-hover:text-zinc-200 transition text-left truncate shrink-0 max-w-[90px] sm:max-w-none text-xs sm:text-sm"
-                        >
-                          {creator.name}
-                        </button>
-
-                        {/* Scout Signal Thesis Pill */}
-                        {signal && (
-                          <span
-                            title={signal.thesis}
-                            className={`inline-flex items-center gap-1 px-1.5 py-0.2 sm:py-0.5 rounded text-[9px] sm:text-[10px] font-mono shrink-0 cursor-help ${signal.tagColor}`}
+                      <div className="flex flex-col min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <button
+                            onClick={() => onSelectCreator(creator.name)}
+                            className="font-medium text-white hover:text-emerald-400 text-left transition truncate cursor-pointer"
                           >
-                            <span>{signal.emoji}</span>
-                            <span className="hidden sm:inline font-medium">
-                              {signal.badge}
+                            {creator.name}
+                          </button>
+
+                          {/* CT Native Badge with popover info */}
+                          {isCT && (
+                            <span
+                              title={
+                                ctInfo
+                                  ? `${ctInfo.tag}${ctInfo.description ? ` — ${ctInfo.description}` : ""}`
+                                  : "Crypto/CT Native"
+                              }
+                              className="px-1.5 py-0.2 rounded text-[9px] font-mono bg-purple-500/15 text-purple-300 border border-purple-500/30 shrink-0 cursor-help"
+                            >
+                              CT
                             </span>
-                          </span>
-                        )}
+                          )}
 
-                        {creator.isNew && (
-                          <span className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded text-[8px] sm:text-[9px] font-mono font-bold bg-cyan-500/15 text-cyan-300 border border-cyan-500/20 shrink-0">
-                            <Sparkles className="w-2.5 h-2.5" />
-                            NEW
-                          </span>
-                        )}
+                          {/* New Entrant Badge */}
+                          {creator.isNew && (
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-mono bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 shrink-0">
+                              <Sparkles className="w-2.5 h-2.5 text-cyan-300" />
+                              <span>NEW</span>
+                            </span>
+                          )}
 
-                        {isCT && (
-                          <span
-                            title={ctInfo?.tag || "Crypto / CT"}
-                            className="px-1.5 py-0.2 rounded text-[8px] sm:text-[9px] font-mono bg-purple-500/15 text-purple-300 border border-purple-500/30 shrink-0"
-                          >
-                            CT
-                          </span>
-                        )}
+                          {/* Automated Scouting Thesis Badge */}
+                          {signal && (
+                            <span
+                              title={signal.thesis}
+                              className={`inline-flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.2 rounded-full border ${signal.tagColor} shadow-sm shrink-0 cursor-help whitespace-nowrap hidden sm:inline-flex`}
+                            >
+                              <span>{signal.emoji}</span>
+                              <span className="font-semibold">{signal.badge}</span>
+                            </span>
+                          )}
+                        </div>
 
-                        {ctInfo?.handle && (
-                          <a
-                            href={`https://x.com/${ctInfo.handle}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title={`@${ctInfo.handle} on X`}
-                            className="text-zinc-600 hover:text-zinc-400 transition shrink-0 ml-0.5 hidden sm:inline-block"
-                          >
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
+                        {/* X Handle Subtitle */}
+                        {creator.handle && (
+                          <div className="flex items-center gap-1 text-[11px] text-zinc-500 font-mono">
+                            <a
+                              href={`https://x.com/${creator.handle}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:text-zinc-300 hover:underline flex items-center gap-0.5 truncate"
+                              title={`View @${creator.handle} on X`}
+                            >
+                              <span>@{creator.handle}</span>
+                              <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+                            </a>
+                          </div>
                         )}
                       </div>
                     </div>
                   </td>
 
-                  {/* Change (Δ) Column */}
-                  <td className="py-0 px-2.5 sm:px-4 text-right align-middle shrink-0">
-                    <div className="inline-flex items-center justify-end">
+                  {/* Delta Change Column */}
+                  <td className="py-0 px-2.5 sm:px-4 text-right font-mono align-middle shrink-0">
+                    <div className="flex items-center justify-end">
                       {isUp ? (
-                        <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 sm:px-2 py-0.5 rounded-md text-[11px] sm:text-xs font-mono font-bold inline-flex items-center gap-0.5 sm:gap-1">
-                          <ArrowUp className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-0.5 px-1.5 sm:px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
+                          <ArrowUp className="w-3 h-3 shrink-0" />
                           <span>+{creator.delta}</span>
                         </span>
                       ) : isDown ? (
-                        <span className="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-1.5 sm:px-2 py-0.5 rounded-md text-[11px] sm:text-xs font-mono font-bold inline-flex items-center gap-0.5 sm:gap-1">
-                          <ArrowDown className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-0.5 px-1.5 sm:px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 text-xs font-semibold">
+                          <ArrowDown className="w-3 h-3 shrink-0" />
                           <span>{creator.delta}</span>
                         </span>
                       ) : (
-                        <span className="text-zinc-600 font-mono text-xs sm:text-sm">
+                        <span className="inline-flex items-center px-1.5 py-0.5 text-zinc-500 text-xs">
                           —
                         </span>
                       )}
@@ -257,43 +271,71 @@ export function LeaderboardTable({
                     )}
                   </td>
 
-                  {/* Sleek + Draft / ✓ In Lineup Toggle Button */}
+                  {/* Action Buttons: Lineup + Board */}
                   <td className="py-0 px-2.5 sm:px-4 text-right align-middle shrink-0">
-                    {onToggleLineup && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onToggleLineup(creator);
-                        }}
-                        disabled={!isInLineup && isLineupFull}
-                        title={
-                          isInLineup
-                            ? `Remove ${creator.name} from lineup`
-                            : isLineupFull
-                            ? "Lineup is full (5/5 creators drafted)"
-                            : `Draft ${creator.name} to 5-creator lineup`
-                        }
-                        className={`inline-flex items-center justify-center gap-1 text-[10px] sm:text-[11px] font-mono font-semibold px-2 sm:px-2.5 py-1 rounded-lg border transition ${
-                          isInLineup
-                            ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/40"
-                            : isLineupFull
-                            ? "bg-white/[0.02] text-zinc-600 border-white/[0.04] cursor-not-allowed opacity-40"
-                            : "bg-white/[0.04] text-zinc-400 border-white/[0.08] hover:bg-white/[0.1] hover:text-white hover:border-white/20 cursor-pointer"
-                        }`}
-                      >
-                        {isInLineup ? (
-                          <>
-                            <Check className="w-3 h-3 text-emerald-400" />
-                            <span className="hidden sm:inline">In Lineup</span>
-                          </>
-                        ) : (
-                          <>
-                            <Plus className="w-3 h-3" />
-                            <span className="hidden sm:inline">Draft</span>
-                          </>
-                        )}
-                      </button>
-                    )}
+                    <div className="flex items-center justify-end gap-1.5">
+                      {/* Board Draft Button */}
+                      {onOpenBoardForCreator && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenBoardForCreator(creator);
+                          }}
+                          className={`inline-flex items-center justify-center gap-1 text-[10px] sm:text-[11px] font-mono font-medium px-2 py-1 rounded-lg border transition cursor-pointer ${
+                            boardEntry
+                              ? "bg-purple-500/15 text-purple-300 border-purple-500/30 hover:bg-purple-500/25"
+                              : "bg-white/[0.03] text-zinc-400 border-white/[0.08] hover:bg-white/[0.08] hover:text-white"
+                          }`}
+                          title={
+                            boardEntry
+                              ? `${creator.name} is in your Motion Board (${boardEntry.emoji})`
+                              : `Draft ${creator.name} to Motion Board`
+                          }
+                        >
+                          <LayoutGrid className="w-3 h-3 text-emerald-400 shrink-0" />
+                          <span className="hidden sm:inline">
+                            {boardEntry ? `${boardEntry.emoji} Board` : "Board"}
+                          </span>
+                        </button>
+                      )}
+
+                      {/* Lineup Draft Button */}
+                      {onToggleLineup && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleLineup(creator);
+                          }}
+                          disabled={!isInLineup && isLineupFull}
+                          title={
+                            isInLineup
+                              ? `Remove ${creator.name} from lineup`
+                              : isLineupFull
+                              ? "Lineup is full (5/5 creators drafted)"
+                              : `Draft ${creator.name} to 5-creator lineup`
+                          }
+                          className={`inline-flex items-center justify-center gap-1 text-[10px] sm:text-[11px] font-mono font-semibold px-2 sm:px-2.5 py-1 rounded-lg border transition ${
+                            isInLineup
+                              ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/40"
+                              : isLineupFull
+                              ? "bg-white/[0.02] text-zinc-600 border-white/[0.04] cursor-not-allowed opacity-40"
+                              : "bg-white/[0.04] text-zinc-400 border-white/[0.08] hover:bg-white/[0.1] hover:text-white hover:border-white/20 cursor-pointer"
+                          }`}
+                        >
+                          {isInLineup ? (
+                            <>
+                              <Check className="w-3 h-3 text-emerald-400" />
+                              <span className="hidden sm:inline">In Lineup</span>
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="w-3 h-3" />
+                              <span className="hidden sm:inline">Draft</span>
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );

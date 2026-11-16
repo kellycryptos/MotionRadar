@@ -9,6 +9,17 @@ import {
   autoScoutBest5,
   generateLineupShareTweet,
 } from "../src/lib/scout-signals.ts";
+import {
+  BOARD_TIERS,
+  createEmptyBoard,
+  countTotalPicks,
+  getSuggestedTheses,
+  generateSuggestedBoard,
+  generateBoardShareTweet,
+  encodeBoardToUrlParam,
+  decodeBoardFromUrlParam,
+  syncBoardWithLiveData,
+} from "../src/lib/board.ts";
 
 console.log("▶ Running MotionRadar verification suite...");
 
@@ -19,8 +30,7 @@ assert.ok(
 );
 assert.ok(FALLBACK_LEADERBOARD.asOf, "asOf timestamp must be present");
 
-// 1b. Verify all 79 creators resolve to valid X handles
-let missingHandles = 0;
+// 1b. Verify all creators resolve to valid X handles
 for (const creator of FALLBACK_LEADERBOARD.rows) {
   const handle = creator.handle || getCreatorHandle(creator);
   assert.ok(
@@ -206,5 +216,105 @@ assert.ok(
   "Tweet should format contrarian dip with tag"
 );
 
-console.log("✔ Pre-filled X share intent format verified");
+console.log("✔ Lineup pre-filled X share intent format verified");
+
+// 8. Motion Board Engine & Tier Management Verification
+assert.equal(BOARD_TIERS.length, 4, "Must define exactly 4 tiers");
+const tierIds = BOARD_TIERS.map((t) => t.id);
+assert.deepEqual(
+  tierIds,
+  ["must-haves", "value-picks", "sleepers", "pass"],
+  "Tiers must be Must-Haves, Value Picks, Sleepers, Pass"
+);
+
+// Empty board check
+const emptyBoard = createEmptyBoard();
+assert.equal(countTotalPicks(emptyBoard), 0, "Empty board should have 0 picks");
+
+// Thesis suggestion tests
+const gainerCreator = {
+  id: "g1",
+  name: "Gainer",
+  position: 12,
+  delta: 5,
+  isNew: false,
+};
+const mustHaveTheses = getSuggestedTheses(gainerCreator, "must-haves");
+assert.ok(mustHaveTheses.length >= 2, "Must return at least 2 thesis suggestions");
+assert.ok(
+  mustHaveTheses[0].includes("Breakout velocity"),
+  "Must suggest breakout velocity for high positive delta"
+);
+
+const dipCreator = {
+  id: "d1",
+  name: "Dipper",
+  position: 30,
+  delta: -4,
+  isNew: false,
+};
+const valueTheses = getSuggestedTheses(dipCreator, "value-picks");
+assert.ok(
+  valueTheses[0].includes("Contrarian dip"),
+  "Must suggest contrarian dip for negative delta in value tier"
+);
+
+// Suggested Board Generation
+const suggestedBoard = generateSuggestedBoard(FALLBACK_LEADERBOARD.rows);
+const suggestedPicksCount = countTotalPicks(suggestedBoard);
+assert.ok(suggestedPicksCount >= 8, "Suggested board should draft at least 8 picks");
+assert.ok(
+  suggestedBoard["must-haves"].length > 0,
+  "Must-Haves tier should have picks"
+);
+assert.ok(
+  suggestedBoard["value-picks"].length > 0,
+  "Value Picks tier should have picks"
+);
+assert.ok(
+  suggestedBoard["sleepers"].length > 0,
+  "Sleepers tier should have picks"
+);
+assert.ok(
+  suggestedBoard["pass"].length > 0,
+  "Pass tier should have picks"
+);
+
+// Sync with live data
+const updatedRows = FALLBACK_LEADERBOARD.rows.map((r) => {
+  if (r.id === suggestedBoard["must-haves"][0].creatorId) {
+    return { ...r, delta: r.delta + 1, position: Math.max(1, r.position - 1) };
+  }
+  return r;
+});
+const syncedBoard = syncBoardWithLiveData(suggestedBoard, updatedRows);
+assert.equal(
+  syncedBoard["must-haves"][0].delta,
+  suggestedBoard["must-haves"][0].delta + 1,
+  "Synced board must update delta from live data"
+);
+
+// Board URL param encoding & decoding roundtrip
+const encodedParam = encodeBoardToUrlParam(suggestedBoard);
+assert.ok(encodedParam.length > 0, "Board should serialize to non-empty string");
+const decodedBoard = decodeBoardFromUrlParam(encodedParam, FALLBACK_LEADERBOARD.rows);
+assert.ok(decodedBoard !== null, "Decoded board must be non-null");
+assert.equal(
+  countTotalPicks(decodedBoard),
+  suggestedPicksCount,
+  "Decoded board must preserve pick count"
+);
+
+// Board Share Tweet Format
+const boardTweet = generateBoardShareTweet(suggestedBoard);
+assert.ok(boardTweet.includes("My Motion Board"), "Tweet must have title");
+assert.ok(boardTweet.includes("@motiongame_"), "Tweet must mention @motiongame_");
+assert.ok(boardTweet.includes("@callmogbot"), "Tweet must tag @callmogbot");
+assert.ok(boardTweet.includes("#Mogathon"), "Tweet must include #Mogathon");
+assert.ok(boardTweet.includes("🔥 MUST-HAVES:"), "Tweet must include Must-Haves header");
+assert.ok(boardTweet.includes("💎 VALUE PICKS:"), "Tweet must include Value Picks header");
+assert.ok(boardTweet.includes("⚡ SLEEPERS:"), "Tweet must include Sleepers header");
+assert.ok(boardTweet.includes("⚠️ PASS:"), "Tweet must include Pass header");
+
+console.log("✔ Motion Board tier maker & share engine verification passed");
 console.log("🎉 All MotionRadar verification & scout engine tests passed!");

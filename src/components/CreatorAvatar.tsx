@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { getCreatorHandle, getInitials } from "@/lib/creator-handles";
 
 export interface CreatorAvatarProps {
@@ -17,14 +17,29 @@ export interface CreatorAvatarProps {
   alt?: string;
 }
 
+const GRADIENT_PALETTES = [
+  "from-emerald-500/20 to-teal-900/40 text-emerald-300 border-emerald-500/30",
+  "from-cyan-500/20 to-blue-900/40 text-cyan-300 border-cyan-500/30",
+  "from-purple-500/20 to-indigo-900/40 text-purple-300 border-purple-500/30",
+  "from-amber-500/20 to-orange-900/40 text-amber-300 border-amber-500/30",
+  "from-rose-500/20 to-pink-900/40 text-rose-300 border-rose-500/30",
+  "from-violet-500/20 to-fuchsia-900/40 text-violet-300 border-violet-500/30",
+  "from-sky-500/20 to-indigo-900/40 text-sky-300 border-sky-500/30",
+];
+
+function getNameHash(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
 /**
- * Resilient CreatorAvatar for MotionRadar.
- * Tries multiple free avatar services before falling back to initials.
- * 1. avatarsapi.com/x/{handle}
- * 2. unavatar.io/x/{handle}
- * 3. unavatar.io/twitter/{handle}
- * 4. DiceBear initials SVG
- * 5. Local styled initials
+ * Resilient CreatorAvatar component for MotionRadar:
+ * - Deterministic, high-contrast gradient initials styling (zero broken UI states)
+ * - Transparent lazy photo loading with instant graceful fallback on network / CDN failures
  */
 export function CreatorAvatar({
   name,
@@ -45,65 +60,55 @@ export function CreatorAvatar({
   const displayInitials = getInitials(resolvedName, propInitials);
   const altText = alt || resolvedName || (resolvedHandle ? `@${resolvedHandle}` : "Creator avatar");
 
-  const [sourceStep, setSourceStep] = useState<number>(0);
+  const [hasImageError, setHasImageError] = useState(false);
   const [currentHandle, setCurrentHandle] = useState<string | undefined>(resolvedHandle);
 
+  // Reset error state if handle changes
   if (currentHandle !== resolvedHandle) {
     setCurrentHandle(resolvedHandle);
-    setSourceStep(0);
+    setHasImageError(false);
   }
 
-  const handleError = () => {
-    setSourceStep((prev) => prev + 1);
-  };
+  const palette = useMemo(() => {
+    const idx = getNameHash(resolvedName || "Motion") % GRADIENT_PALETTES.length;
+    return GRADIENT_PALETTES[idx];
+  }, [resolvedName]);
 
   const hasCustomSize = Boolean(className && (className.includes("w-") || className.includes("h-")));
   const baseSize = hasCustomSize ? "" : "w-7 h-7";
 
+  const fallbackClasses = `rounded-full bg-gradient-to-br ${palette} border flex items-center justify-center font-bold font-mono tracking-tight select-none shrink-0 ${baseSize} ${className || ""}`.trim();
   const imgClasses = `rounded-full object-cover border border-white/10 shrink-0 bg-[#18181C] ${baseSize} ${className || ""}`.trim();
-  const fallbackClasses = `rounded-full bg-[#18181C] border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-200 shrink-0 font-mono ${baseSize} ${className || ""}`.trim();
 
-  const diceBearUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
-    resolvedName || "Motion"
-  )}&radius=50&backgroundColor=18181b,27272a,0f172a,134e4a,312e81,3f3f46&textColor=f4f4f5,e4e4e7,34d399,a78bfa&fontSize=42&fontWeight=600`;
+  // If handle is present and hasn't errored, attempt unavatar
+  if (resolvedHandle && !hasImageError) {
+    const photoUrl = `https://unavatar.io/x/${resolvedHandle}`;
 
-  let src: string | null = null;
-  if (resolvedHandle) {
-    if (sourceStep === 0) {
-      src = `https://avatarsapi.com/x/${resolvedHandle}`;
-    } else if (sourceStep === 1) {
-      src = `https://unavatar.io/x/${resolvedHandle}`;
-    } else if (sourceStep === 2) {
-      src = `https://unavatar.io/twitter/${resolvedHandle}`;
-    } else if (sourceStep === 3) {
-      src = diceBearUrl;
-    }
-  } else if (sourceStep <= 0) {
-    src = diceBearUrl;
-  }
-
-  if (src) {
     return (
-      <img
-        src={src}
-        alt={altText}
-        width={28}
-        height={28}
-        loading="lazy"
-        decoding="async"
-        referrerPolicy="no-referrer"
-        onError={handleError}
-        className={imgClasses}
-      />
+      <div className="relative shrink-0">
+        <img
+          src={photoUrl}
+          alt={altText}
+          width={28}
+          height={28}
+          loading="lazy"
+          decoding="async"
+          referrerPolicy="no-referrer"
+          onError={() => setHasImageError(true)}
+          className={imgClasses}
+        />
+      </div>
     );
   }
 
+  // Resilient, pristine fallback avatar
   return (
     <div
       className={fallbackClasses}
       title={resolvedName ? `${resolvedName}${resolvedHandle ? ` (@${resolvedHandle})` : ""}` : undefined}
+      aria-label={altText}
     >
-      {displayInitials}
+      <span>{displayInitials}</span>
     </div>
   );
 }

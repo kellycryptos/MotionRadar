@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { Zap, Plus, Check } from "lucide-react";
+import { Zap, Plus, Check, LayoutGrid } from "lucide-react";
 import { LeaderboardCreator } from "@/types/leaderboard";
+import { BoardTierId } from "@/lib/board";
 import { isCryptoCreator } from "@/lib/crypto-creators";
 import { getScoutSignal } from "@/lib/scout-signals";
 import { CreatorAvatar } from "./CreatorAvatar";
@@ -13,6 +14,8 @@ interface BiggestMoversProps {
   lineupIds?: Set<string>;
   onToggleLineup?: (creator: LeaderboardCreator) => void;
   isLineupFull?: boolean;
+  onOpenBoardForCreator?: (creator: LeaderboardCreator) => void;
+  boardCreatorMap?: Map<string, { tierId: BoardTierId; emoji: string }>;
 }
 
 function MoverSparkline({
@@ -96,6 +99,8 @@ export function BiggestMovers({
   lineupIds = new Set(),
   onToggleLineup,
   isLineupFull = false,
+  onOpenBoardForCreator,
+  boardCreatorMap,
 }: BiggestMoversProps) {
   if (movers.length === 0) return null;
 
@@ -142,6 +147,7 @@ export function BiggestMovers({
             const signal = getScoutSignal(creator);
             const prevPosition = creator.position + creator.delta;
             const isInLineup = lineupIds.has(creator.id);
+            const boardEntry = boardCreatorMap?.get(creator.id);
 
             return (
               <div
@@ -149,19 +155,19 @@ export function BiggestMovers({
                 onClick={() => onSelectCreator(creator.name)}
                 className={`group relative bg-[#121215] border rounded-xl sm:rounded-2xl p-3.5 sm:p-5 pb-4 sm:pb-5 flex flex-col justify-between h-[165px] sm:h-[195px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition cursor-pointer overflow-hidden ${
                   isInLineup
-                    ? "border-emerald-500/40 bg-emerald-500/[0.04] border-l-2 border-l-emerald-500"
-                    : "border-white/[0.07] hover:border-white/[0.15]"
+                    ? "border-emerald-500/50 bg-emerald-500/[0.03]"
+                    : "border-white/[0.08] hover:border-white/20"
                 }`}
               >
-                {/* Top Row: ONLY Rank on the left, Delta + Draft on the right with ZERO crowding */}
-                <div className="flex items-center justify-between z-10 gap-2">
-                  <span className="font-mono text-xs sm:text-sm font-semibold text-zinc-500 shrink-0">
+                {/* Top Row: Rank & Delta & Action Buttons */}
+                <div className="flex items-center justify-between z-10">
+                  <span className="text-xs sm:text-sm font-bold font-mono text-zinc-400">
                     #{creator.position}
                   </span>
 
                   <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
                     <span
-                      className={`px-1.5 sm:px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-mono font-bold shrink-0 ${
+                      className={`inline-flex items-center font-mono text-xs sm:text-sm font-bold px-1.5 sm:px-2 py-0.5 rounded ${
                         isUp
                           ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                           : isDown
@@ -172,6 +178,30 @@ export function BiggestMovers({
                       {isUp ? `+${creator.delta}` : creator.delta}
                     </span>
 
+                    {/* Board Button */}
+                    {onOpenBoardForCreator && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOpenBoardForCreator(creator);
+                        }}
+                        title={
+                          boardEntry
+                            ? `${creator.name} is in Board (${boardEntry.emoji})`
+                            : `Add ${creator.name} to Motion Board`
+                        }
+                        className={`inline-flex items-center justify-center p-1 sm:px-1.5 sm:py-0.5 rounded-md transition border text-[10px] font-mono shrink-0 cursor-pointer ${
+                          boardEntry
+                            ? "bg-purple-500/15 text-purple-300 border-purple-500/30"
+                            : "bg-white/[0.05] text-zinc-300 border-white/[0.08] hover:text-white hover:bg-white/[0.1]"
+                        }`}
+                      >
+                        <LayoutGrid className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-400" />
+                        {boardEntry && <span className="ml-0.5">{boardEntry.emoji}</span>}
+                      </button>
+                    )}
+
+                    {/* Lineup Toggle */}
                     {onToggleLineup && (
                       <button
                         onClick={(e) => {
@@ -237,7 +267,7 @@ export function BiggestMovers({
                   )}
                 </div>
 
-                {/* Bottom Row: Rank Progression with plenty of pb so it is never clipped */}
+                {/* Bottom Row: Rank Progression */}
                 <div className="text-[10px] sm:text-xs font-mono text-zinc-500 z-10 pb-1">
                   prev #{prevPosition}
                 </div>
@@ -258,15 +288,16 @@ export function BiggestMovers({
             const signal = getScoutSignal(creator);
             const prevPosition = creator.position + creator.delta;
             const isInLineup = lineupIds.has(creator.id);
+            const boardEntry = boardCreatorMap?.get(creator.id);
 
             return (
               <div
                 key={creator.id}
                 onClick={() => onSelectCreator(creator.name)}
-                className={`group relative bg-[#121215] border rounded-xl sm:rounded-2xl p-2.5 sm:p-4 pb-3 sm:pb-4 flex flex-col justify-between h-[88px] sm:h-[94px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition cursor-pointer overflow-hidden ${
+                className={`group relative bg-[#121215] border rounded-xl sm:rounded-2xl p-2.5 sm:p-4 pb-3 sm:pb-4 flex flex-col justify-between h-[165px] sm:h-[195px] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition cursor-pointer overflow-hidden ${
                   isInLineup
-                    ? "border-emerald-500/40 bg-emerald-500/[0.04] border-l-2 border-l-emerald-500"
-                    : "border-white/[0.07] hover:border-white/[0.15]"
+                    ? "border-emerald-500/50 bg-emerald-500/[0.03]"
+                    : "border-white/[0.08] hover:border-white/20"
                 }`}
               >
                 {/* Top Row: Rank & Delta */}
@@ -298,6 +329,28 @@ export function BiggestMovers({
                       {isUp ? `+${creator.delta}` : creator.delta}
                     </span>
 
+                    {/* Board Button */}
+                    {onOpenBoardForCreator && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOpenBoardForCreator(creator);
+                        }}
+                        title={
+                          boardEntry
+                            ? `${creator.name} is in Board (${boardEntry.emoji})`
+                            : `Add ${creator.name} to Motion Board`
+                        }
+                        className={`w-4 h-4 sm:w-5 sm:h-5 rounded flex items-center justify-center text-xs transition border shrink-0 cursor-pointer ${
+                          boardEntry
+                            ? "bg-purple-500/15 text-purple-300 border-purple-500/30"
+                            : "bg-white/[0.05] text-zinc-400 border-white/[0.08] hover:text-white hover:bg-white/[0.1]"
+                        }`}
+                      >
+                        <LayoutGrid className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-400" />
+                      </button>
+                    )}
+
                     {onToggleLineup && (
                       <button
                         onClick={(e) => {
@@ -321,34 +374,36 @@ export function BiggestMovers({
                         }`}
                       >
                         {isInLineup ? (
-                          <Check className="w-2.5 h-2.5 text-emerald-400" />
+                          <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-400" />
                         ) : (
-                          <Plus className="w-2.5 h-2.5" />
+                          <Plus className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                         )}
                       </button>
                     )}
                   </div>
                 </div>
 
-                {/* Middle: Creator Avatar + Name & CT Badge */}
-                <div className="flex items-center gap-1.5 z-10 truncate my-0.5">
-                  <CreatorAvatar creator={creator} className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
-                  <span className="text-xs sm:text-sm font-semibold text-white group-hover:text-zinc-200 transition truncate">
-                    {creator.name}
-                  </span>
-                  {isCT && (
-                    <span className="px-1 py-0.2 rounded text-[8px] sm:text-[9px] font-mono bg-purple-500/15 text-purple-300 border border-purple-500/30 shrink-0">
-                      CT
+                {/* Middle: Avatar + Name */}
+                <div className="z-10 my-0.5 space-y-1">
+                  <CreatorAvatar creator={creator} className="w-6 h-6 sm:w-7 sm:h-7 shrink-0" />
+                  <div className="flex items-center gap-1 truncate">
+                    <span className="text-xs sm:text-sm font-semibold text-white group-hover:text-zinc-200 transition truncate">
+                      {creator.name}
                     </span>
-                  )}
+                    {isCT && (
+                      <span className="px-1 py-0.2 rounded text-[7px] sm:text-[8px] font-mono bg-purple-500/15 text-purple-300 border border-purple-500/30 shrink-0">
+                        CT
+                      </span>
+                    )}
+                  </div>
                 </div>
 
-                {/* Bottom Row */}
-                <div className="text-[10px] sm:text-[11px] font-mono text-zinc-500 z-10">
+                {/* Bottom Row: Prev Position */}
+                <div className="text-[9px] sm:text-[10px] font-mono text-zinc-500 z-10 pb-0.5">
                   prev #{prevPosition}
                 </div>
 
-                {/* Background Compact Sparkline */}
+                {/* Sparkline */}
                 <MoverSparkline isUp={isUp} isHero={false} />
               </div>
             );

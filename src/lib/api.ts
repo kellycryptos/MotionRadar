@@ -25,7 +25,7 @@ export async function getLeaderboardData(): Promise<FetchResult> {
         Accept: "application/json",
         "User-Agent": "MotionRadar/1.0 (+https://github.com/kellycryptos/MotionRadar)",
       },
-      next: { revalidate: 60 },
+      next: { revalidate: 25 },
     });
 
     clearTimeout(timeoutId);

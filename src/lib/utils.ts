@@ -7,12 +7,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatTimeAgo(isoString: string): string {
+export function formatTimeAgo(isoString: string, currentTimestamp?: number): string {
   try {
     const date = new Date(isoString);
-    const now = new Date();
+    const now = currentTimestamp ? new Date(currentTimestamp) : new Date();
     const diffMs = now.getTime() - date.getTime();
-    if (diffMs < 0) return "just now";
+    if (diffMs < 0 || diffMs < 2000) return "just now";
 
     const diffSec = Math.floor(diffMs / 1000);
     if (diffSec < 60) return `${diffSec}s ago`;
