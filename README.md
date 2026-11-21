@@ -10,17 +10,6 @@
 
 ---
 
-### 🏆 Sponsor & Ecosystem Evidence Matrix ("The Receipt Box")
-
-| Sponsor / Track | Integration & Artifact | Verification Link | Source Permalink |
-| :--- | :--- | :--- | :--- |
-| **Motion Official** (`@motiongame_`) | Live Leaderboard Ingestion & Real-Time Edge Cache | [`leaderboard.motion.game`](https://leaderboard.motion.game/api/leaderboard) | [`src/lib/api.ts`](src/lib/api.ts) |
-| **Motion Seats** (`seats.motion.game`) | Genesis Access Explainer, Wave Criteria & Seat Meta | [`seats.motion.game`](https://seats.motion.game) | [`src/components/HowItWorksContent.tsx`](src/components/HowItWorksContent.tsx) |
-| **Mogathon** (`@callmogbot`) | Scout Lineup Sharing, Market Pulse, `#MotionSeats` | [`x.com/callmogbot`](https://x.com/callmogbot) | [`src/components/MogathonModal.tsx`](src/components/MogathonModal.tsx) |
-| **Zero-Config Sandbox** | 100% Offline Fixture Fallback & CI Immune Suite | Verified with `npm test` | [`src/lib/fixture-data.ts`](src/lib/fixture-data.ts) |
-
----
-
 ## Overview
 
 [Motion](https://seats.motion.game) is a creator fantasy sports game where players collect digital creator cards, draft weekly 5-person lineups, and score points based on cultural velocity across X, Instagram, TikTok, and YouTube.
