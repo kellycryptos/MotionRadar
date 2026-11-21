@@ -233,5 +233,5 @@ ${picksText}
 
 Scout live cultural velocity before lineups lock 👇
 https://motionradar.vercel.app/
-cc @callmogbot #Mogathon`;
+cc @callmogbot #MotionSeats #Mogathon`;
 }

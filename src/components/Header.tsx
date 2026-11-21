@@ -60,15 +60,19 @@ export function Header({
             <button
               onClick={onOpenBoardModal}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/25 text-xs font-medium transition shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] shrink-0 cursor-pointer"
-              title="Build your tiered Motion Board (Must-Haves, Value, Sleepers, Pass)"
+              title="Build your tiered Motion Board (Press B)"
             >
               <LayoutGrid className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
               <span className="hidden xs:inline sm:inline">Motion Board</span>
               <span className="xs:hidden sm:hidden">Board</span>
-              {boardPicksCount > 0 && (
+              {boardPicksCount > 0 ? (
                 <span className="font-mono text-[10px] bg-emerald-500/25 text-emerald-200 px-1.5 py-0.5 rounded-full border border-emerald-500/40 font-semibold leading-none">
                   {boardPicksCount}
                 </span>
+              ) : (
+                <kbd className="hidden lg:inline-flex text-[9px] font-mono px-1 py-0.2 bg-white/[0.06] rounded border border-white/[0.08] text-emerald-300 select-none">
+                  B
+                </kbd>
               )}
             </button>
           )}
@@ -118,10 +122,13 @@ export function Header({
           <button
             onClick={onOpenShareModal}
             className="flex items-center justify-center gap-1.5 p-2 sm:px-3 sm:py-1.5 rounded-xl bg-[#121215] hover:bg-white/[0.06] text-zinc-200 border border-white/[0.08] text-xs font-medium transition shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)] shrink-0 cursor-pointer"
-            title="Share MotionRadar on X"
+            title="Share MotionRadar on X (Press M)"
           >
             <Share2 className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
             <span className="hidden sm:inline">Share</span>
+            <kbd className="hidden lg:inline-flex text-[9px] font-mono px-1 py-0.2 bg-white/[0.06] rounded border border-white/[0.08] text-zinc-400 select-none">
+              M
+            </kbd>
           </button>
         </div>
       </div>

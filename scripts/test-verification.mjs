@@ -199,6 +199,7 @@ const tweet = generateLineupShareTweet(testLineup);
 assert.ok(tweet.includes("@motiongame_"), "Tweet must mention @motiongame_");
 assert.ok(tweet.includes("@callmogbot"), "Tweet must tag @callmogbot");
 assert.ok(tweet.includes("#Mogathon"), "Tweet must include #Mogathon");
+assert.ok(tweet.includes("#MotionSeats"), "Tweet must include #MotionSeats");
 assert.ok(
   tweet.includes("https://motionradar.vercel.app/"),
   "Tweet must include the live site URL"
@@ -311,6 +312,7 @@ assert.ok(boardTweet.includes("My Motion Board"), "Tweet must have title");
 assert.ok(boardTweet.includes("@motiongame_"), "Tweet must mention @motiongame_");
 assert.ok(boardTweet.includes("@callmogbot"), "Tweet must tag @callmogbot");
 assert.ok(boardTweet.includes("#Mogathon"), "Tweet must include #Mogathon");
+assert.ok(boardTweet.includes("#MotionSeats"), "Tweet must include #MotionSeats");
 assert.ok(boardTweet.includes("🔥 MUST-HAVES:"), "Tweet must include Must-Haves header");
 assert.ok(boardTweet.includes("💎 VALUE PICKS:"), "Tweet must include Value Picks header");
 assert.ok(boardTweet.includes("⚡ SLEEPERS:"), "Tweet must include Sleepers header");

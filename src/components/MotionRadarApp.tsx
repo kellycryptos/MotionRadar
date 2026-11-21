@@ -216,6 +216,53 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
     setBoard((prev) => syncBoardWithLiveData(prev, data.rows || []));
   }, [data.rows]);
 
+  // Global Keyboard Shortcuts (Linear / Apple Notes polish)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const isInput =
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable);
+
+      if (e.key === "Escape") {
+        if (isBoardModalOpen) setIsBoardModalOpen(false);
+        if (isShareModalOpen) setIsShareModalOpen(false);
+        if (isInput) (target as HTMLElement).blur();
+        return;
+      }
+
+      if (isInput) return;
+
+      // Focus search with '/' or 'Cmd+K' / 'Ctrl+K'
+      if (e.key === "/" || ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k")) {
+        e.preventDefault();
+        const searchInput = document.getElementById("creator-search-input") as HTMLInputElement | null;
+        searchInput?.focus();
+        return;
+      }
+
+      // 'B' toggles Motion Board
+      if (e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        setIsBoardModalOpen((prev) => !prev);
+        return;
+      }
+
+      // 'M' toggles Mogathon Pulse modal
+      if (e.key.toLowerCase() === "m") {
+        e.preventDefault();
+        setIsShareModalOpen((prev) => !prev);
+        return;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isBoardModalOpen, isShareModalOpen]);
+
   const lineupIds = useMemo(() => new Set(lineup.map((c) => c.id)), [lineup]);
   const isLineupFull = lineup.length >= 5;
 
@@ -289,6 +336,8 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
       list = list.filter(
         (r) => r.delta < 0 && (r.position <= 40 || r.delta <= -2)
       );
+    } else if (activePreset === "seat-meta") {
+      list = list.filter((r) => r.delta >= 2);
     }
 
     // Filter by Tab
@@ -343,6 +392,7 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
       | "top-10"
       | "high-volatility"
       | "contrarian-dips"
+      | "seat-meta"
   ) => {
     if (preset === "all") {
       setActivePreset(null);
@@ -354,6 +404,11 @@ export function MotionRadarApp({ initialResult }: MotionRadarAppProps) {
       setSelectedFilter("all");
       setSearchQuery("");
       setSortOption("delta-asc");
+    } else if (preset === "seat-meta") {
+      setActivePreset(preset);
+      setSelectedFilter("all");
+      setSearchQuery("");
+      setSortOption("delta-desc");
     } else {
       setActivePreset(preset);
       setSelectedFilter("all");

@@ -420,7 +420,7 @@ ${body || "Building my tiered Motion board on MotionRadar!"}
 
 Build and share your tiered board 👇
 ${url}
-cc @callmogbot #Mogathon`;
+cc @callmogbot #MotionSeats #Mogathon`;
 }
 
 // UTF-8 safe base64 helper that never throws Latin1 DOMException

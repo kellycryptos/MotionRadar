@@ -98,8 +98,8 @@ export function MogathonModal({
 
         {/* Footer links */}
         <div className="pt-2 border-t border-white/[0.08] flex items-center justify-between text-[11px] text-zinc-500 font-mono">
-          <span>Target: @callmogbot</span>
-          <span>Mogathon 2026</span>
+          <span>Tags: @callmogbot @motiongame_</span>
+          <span>#MotionSeats #Mogathon</span>
         </div>
       </div>
     </div>

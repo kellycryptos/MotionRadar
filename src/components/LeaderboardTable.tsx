@@ -217,9 +217,9 @@ export function LeaderboardTable({
                           )}
                         </div>
 
-                        {/* X Handle Subtitle */}
+                        {/* X Handle Subtitle & Live Posts Catalyst Link */}
                         {creator.handle && (
-                          <div className="flex items-center gap-1 text-[11px] text-zinc-500 font-mono">
+                          <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 font-mono">
                             <a
                               href={`https://x.com/${creator.handle}`}
                               target="_blank"
@@ -229,6 +229,16 @@ export function LeaderboardTable({
                             >
                               <span>@{creator.handle}</span>
                               <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+                            </a>
+                            <span className="text-zinc-700 select-none">•</span>
+                            <a
+                              href={`https://x.com/search?q=from%3A${creator.handle}&f=live`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-zinc-500 hover:text-emerald-400 transition-colors text-[10px] flex items-center gap-0.5"
+                              title={`Scout live posts from @${creator.handle} on X for momentum catalysts`}
+                            >
+                              <span>Pulse</span>
                             </a>
                           </div>
                         )}

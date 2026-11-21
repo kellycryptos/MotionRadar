@@ -93,6 +93,6 @@ ${loserText}
 Key Movers:
 ${moverHighlights}
 
-Scouting top creator momentum for #Mogathon.
+Scouting top creator momentum for @motiongame_ #MotionSeats #Mogathon.
 cc @callmogbot`;
 }

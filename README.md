@@ -10,6 +10,17 @@
 
 ---
 
+### 🏆 Sponsor & Ecosystem Evidence Matrix ("The Receipt Box")
+
+| Sponsor / Track | Integration & Artifact | Verification Link | Source Permalink |
+| :--- | :--- | :--- | :--- |
+| **Motion Official** (`@motiongame_`) | Live Leaderboard Ingestion & Real-Time Edge Cache | [`leaderboard.motion.game`](https://leaderboard.motion.game/api/leaderboard) | [`src/lib/api.ts`](src/lib/api.ts) |
+| **Motion Seats** (`seats.motion.game`) | Genesis Access Explainer, Wave Criteria & Seat Meta | [`seats.motion.game`](https://seats.motion.game) | [`src/components/HowItWorksContent.tsx`](src/components/HowItWorksContent.tsx) |
+| **Mogathon** (`@callmogbot`) | Scout Lineup Sharing, Market Pulse, `#MotionSeats` | [`x.com/callmogbot`](https://x.com/callmogbot) | [`src/components/MogathonModal.tsx`](src/components/MogathonModal.tsx) |
+| **Zero-Config Sandbox** | 100% Offline Fixture Fallback & CI Immune Suite | Verified with `npm test` | [`src/lib/fixture-data.ts`](src/lib/fixture-data.ts) |
+
+---
+
 ## Overview
 
 [Motion](https://seats.motion.game) is a creator fantasy sports game where players collect digital creator cards, draft weekly 5-person lineups, and score points based on cultural velocity across X, Instagram, TikTok, and YouTube.
@@ -21,20 +32,49 @@ Because scoring depends on rapid shifts in attention rather than static follower
 - **Spot Volatility Outliers**: Highlights top movers sorted by absolute rank change ($|\Delta|$).
 - **Curated Crypto / CT Segment**: Indexes leading Web3 founders, thinkers, and personalities (Vitalik, Cobie, Ansem, Toly, etc.).
 - **Scouting Presets & Export**: One-click filters for high-volatility creators, instant CSV export, and market pulse summaries.
+- **Motion Seats & Wave Intel**: Strategic guidance for [Motion Seats](https://seats.motion.game) Wave 1 and Wave 2 holders.
 - **How Motion Works**: Interactive explainer covering Stars, Rarity, Score Boosts, and lineup strategy in under a minute.
 - **Zero-Friction Reliability**: Edge-cached queries with automatic failover to local snapshot data if the upstream API is unreachable.
 
 ---
 
+## Motion Seats & Wave Access
+
+[Motion Seats](https://seats.motion.game) are limited genesis access passes assigned in sequential waves (Wave 1, Wave 2) to active creators, scouts, and builders who drive social attention.
+
+> *"Actions create motion. So act."*
+
+- **3-Step Seat Verification**:
+  1. **Connect X**: Authorize your active creator or scout handle on X.
+  2. **Check Eligibility**: Algorithmic scoring based on attention velocity, social mindshare, and ecosystem builder activity (such as participating in Mogathon).
+  3. **Claim Seat**: Unlock Wave 1 / Wave 2 entry to the upcoming season.
+- **Seat Meta in MotionRadar**: Use the **Seat Meta** preset chip to filter creators who have $+2$ or greater positive velocity ($\Delta \ge 2$), providing the optimal low-star breakout anchors for weekly fantasy lineups.
+
+---
+
 ## How Motion Works
 
-New to Motion? Visit the [How it Works](https://motionradar.vercel.app/how-it-works) page for a clear, under-a-minute walkthrough of:
+New to Motion? Visit the [How it Works](https://motionradar.vercel.app/how-it-works) page for a clear walkthrough of:
 
 - Motion Score (Attention Velocity)
 - Stars and the Star Cap
 - Rarity and Score Boosts
 - Building a 5-creator lineup
 - The weekly loop
+- Motion Seats and Wave eligibility
+
+---
+
+## Keyboard Shortcuts (Linear-Grade Navigation)
+
+MotionRadar features keyboard-first navigation designed for pro scouts and power users:
+
+| Shortcut | Action | Description |
+| :--- | :--- | :--- |
+| `/` or `⌘K` / `Ctrl+K` | **Focus Search** | Instantly focus the creator search input |
+| `B` | **Motion Board** | Toggle your 4-tier Motion Board modal |
+| `M` | **Market Pulse** | Open the Mogathon / X market pulse modal |
+| `Esc` | **Close / Dismiss** | Dismiss any open modal or unfocus search input |
 
 ---
 
@@ -100,7 +140,7 @@ A dedicated page that walks new players through the core mechanics in under a mi
 Players draft a 5-person roster each week in Motion. MotionRadar includes an interactive floating lineup dock:
 - **Real-Time Lineup Draft**: Add/remove any creator with 1 click from the leaderboard table or Biggest Movers deck.
 - **Combined Momentum Score**: Real-time summation of net velocity ($\sum \Delta$) across your 5 drafted picks.
-- **1-Click Share to X**: Instantly opens a pre-formatted viral scouting breakdown tagging `@callmogbot`, `#Motion`, and `#Mogathon`.
+- **1-Click Share to X**: Instantly opens a pre-formatted viral scouting breakdown tagging `@motiongame_`, `@callmogbot`, `#Motion`, `#MotionSeats`, and `#Mogathon`.
 - **Instant Auto-Draft Presets**: 1-click auto-drafts the top 5 velocity gainers or top 5 Crypto/CT stars.
 
 ### My Motion Board (Tier Maker & Personal Theses)
@@ -131,10 +171,14 @@ Provides actionable scouting theses beyond raw numbers:
 - **✨ New Catalyst**: Fresh entries into the leaderboard.
 
 ### Fast Scouting Presets
+- **Seat Meta**: Isolates high-momentum breakout creators ($\Delta \ge 2$) optimal for weekly fantasy lineups.
 - **CT Elite**: Isolates verified Crypto Twitter creators.
 - **$|\Delta| \ge 2$**: Filters out static positions to show creators undergoing notable movement.
 - **Top 10**: Focuses on the current leaderboard leaders.
 - **Contrarian Dips**: Surfaces oversold creators poised for rebound.
+
+### Live X Pulse Catalyst Scouting
+- Direct 1-click **Pulse** links (`https://x.com/search?q=from%3A{handle}&f=live`) beside every creator handle in the leaderboard table, allowing scouts to view live posts on X and diagnose breaking cultural momentum drivers instantly.
 
 ### Data Tools & Social Pulse
 - **Export to CSV**: Instant client-side download of the active, filtered dataset.

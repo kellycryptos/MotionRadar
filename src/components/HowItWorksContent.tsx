@@ -16,6 +16,7 @@ import {
   ExternalLink,
   ShieldCheck,
   TrendingUp,
+  Ticket,
 } from "lucide-react";
 import { CreatorAvatar } from "./CreatorAvatar";
 
@@ -409,6 +410,60 @@ export function HowItWorksContent() {
                   <div className="p-2 rounded bg-white/[0.02] border border-white/[0.05]">
                     <div className="text-zinc-500 text-[10px]">WEEKEND</div>
                     <div className="text-cyan-400 font-semibold">📡 Scout Radar</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 6: Motion Seats & Wave Access */}
+          <div className="bg-[#121215] border border-white/[0.07] rounded-2xl p-5 sm:p-6 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] hover:border-emerald-500/30 transition-colors">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shrink-0">
+                <Ticket className="w-5 h-5 text-violet-400" />
+              </div>
+
+              <div className="flex-1 min-w-0 space-y-3">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono text-zinc-500">06</span>
+                      <h2 className="text-lg font-semibold text-white">Motion Seats &amp; Wave Access</h2>
+                    </div>
+                    <p className="text-xs text-violet-400 font-mono font-medium">Limited Seats, Assigned in Waves</p>
+                  </div>
+
+                  <a
+                    href="https://seats.motion.game"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 border border-violet-500/25 text-xs font-mono transition"
+                  >
+                    <span>seats.motion.game</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+
+                <p className="text-sm text-zinc-300 leading-relaxed">
+                  <em>&ldquo;Actions create motion. So act.&rdquo;</em> Motion Seats are limited genesis access passes assigned in sequential waves (Wave 1, Wave 2) to active creators, scouts, and builders who drive social attention.
+                </p>
+
+                {/* 3-Step Verification Flow */}
+                <div className="bg-[#09090B] border border-white/[0.06] rounded-xl p-3 grid grid-cols-1 sm:grid-cols-3 gap-2 font-mono text-xs">
+                  <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.05] space-y-1">
+                    <div className="text-zinc-500 text-[10px]">STEP 1</div>
+                    <div className="text-white font-semibold">1. Connect X</div>
+                    <p className="text-[10px] text-zinc-400 font-sans">Authorize your active X handle</p>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.05] space-y-1">
+                    <div className="text-zinc-500 text-[10px]">STEP 2</div>
+                    <div className="text-violet-400 font-semibold">2. Check Eligibility</div>
+                    <p className="text-[10px] text-zinc-400 font-sans">Verified by attention &amp; builder actions</p>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.05] space-y-1">
+                    <div className="text-zinc-500 text-[10px]">STEP 3</div>
+                    <div className="text-emerald-400 font-semibold">3. Claim Seat</div>
+                    <p className="text-[10px] text-zinc-400 font-sans">Unlock Wave 1 / Wave 2 entry</p>
                   </div>
                 </div>
               </div>
