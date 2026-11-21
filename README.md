@@ -28,8 +28,8 @@
 Because scoring depends on rapid shifts in attention rather than static follower counts, scouting breakout creators before lineup locks requires real-time momentum data.
 
 **MotionRadar** connects directly to the live Motion leaderboard to provide an analytics terminal for players, scouts, and creators:
-- **Quantify Attention Velocity**: Tracks live ranks and instantaneous rank changes ($\Delta$) against comparative capture baselines.
-- **Spot Volatility Outliers**: Highlights top movers sorted by absolute rank change ($|\Delta|$).
+- **Quantify Attention Velocity**: Tracks live ranks and instantaneous rank changes (Δ) against comparative capture baselines.
+- **Spot Volatility Outliers**: Highlights top movers sorted by absolute rank change (|Δ|).
 - **Curated Crypto / CT Segment**: Indexes leading Web3 founders, thinkers, and personalities (Vitalik, Cobie, Ansem, Toly, etc.).
 - **Scouting Presets & Export**: One-click filters for high-volatility creators, instant CSV export, and market pulse summaries.
 - **Motion Seats & Wave Intel**: Strategic guidance for [Motion Seats](https://seats.motion.game) Wave 1 and Wave 2 holders.
@@ -48,7 +48,7 @@ Because scoring depends on rapid shifts in attention rather than static follower
   1. **Connect X**: Authorize your active creator or scout handle on X.
   2. **Check Eligibility**: Algorithmic scoring based on attention velocity, social mindshare, and ecosystem builder activity (such as participating in Mogathon).
   3. **Claim Seat**: Unlock Wave 1 / Wave 2 entry to the upcoming season.
-- **Seat Meta in MotionRadar**: Use the **Seat Meta** preset chip to filter creators who have $+2$ or greater positive velocity ($\Delta \ge 2$), providing the optimal low-star breakout anchors for weekly fantasy lineups.
+- **Seat Meta in MotionRadar**: Use the **Seat Meta** preset chip to filter creators who have +2 or greater positive velocity (Δ ≥ 2), providing the optimal low-star breakout anchors for weekly fantasy lineups.
 
 ---
 
@@ -83,32 +83,32 @@ MotionRadar features keyboard-first navigation designed for pro scouts and power
 ```mermaid
 flowchart TD
     subgraph DataSources["Data Ingestion"]
-        API["Motion Live API<br/><code>leaderboard.motion.game</code>"]
-        Fixture["Deterministic Baseline Fixture<br/><code>FALLBACK_LEADERBOARD</code>"]
+        API["Motion Live API - leaderboard.motion.game"]
+        Fixture["Deterministic Baseline Fixture - Fallback Data"]
     end
 
-    subgraph Service["Ingestion & Resilience Layer"]
-        Fetch["Fetch Client with AbortController<br/><code>6000ms Timeout</code>"]
-        ISR["Edge Cache<br/><code>revalidate: 60s</code>"]
+    subgraph Service["Ingestion and Resilience Layer"]
+        Fetch["Fetch Client with AbortController (6000ms Timeout)"]
+        ISR["Edge Cache (revalidate: 25s)"]
     end
 
     subgraph Analytics["Analytics Engine"]
-        Velocity["Attention Velocity Engine<br/><code>Rank, Delta (Δ), Volatility (|Δ|)</code>"]
-        Movers["Movers Sorter<br/><code>Top Gainers & Outlier Drops</code>"]
-        CTRegistry["Curated CT / Crypto Registry<br/><code>Metadata & Ecosystem Tags</code>"]
+        Velocity["Attention Velocity Engine (Rank, Delta, Volatility)"]
+        Movers["Movers Sorter (Top Gainers and Outlier Drops)"]
+        CTRegistry["Curated CT and Crypto Registry"]
     end
 
     subgraph UI["MotionRadar Web Application"]
-        Dashboard["Interactive Dashboard<br/><code>Type-ahead Search, Multi-column Sorting</code>"]
+        Dashboard["Interactive Dashboard and Table"]
         Cards["Biggest Movers Card Deck"]
-        Presets["Scouting Presets<br/><code>CT Elite, |Δ| ≥ 2, Top 10</code>"]
-        Tools["Data Tools<br/><code>CSV Exporter & Social Pulse Generator</code>"]
-        Explainer["How Motion Works<br/><code>/how-it-works</code>"]
+        Presets["Scouting Presets (CT Elite, Delta, Top 10)"]
+        Tools["Data Tools (CSV Export and Social Pulse)"]
+        Explainer["How Motion Works and Seats Guide"]
     end
 
     API --> Fetch
-    Fetch -->|Live Stream| ISR
-    Fetch -.->|Fallback on error / timeout| Fixture
+    Fetch --> ISR
+    Fetch -.-> Fixture
     ISR --> Velocity
     Fixture --> Velocity
     Velocity --> Movers
@@ -118,6 +118,7 @@ flowchart TD
     Movers --> Dashboard
     Presets --> Dashboard
     Dashboard --> Tools
+    Dashboard --> Explainer
 ```
 
 ---
@@ -125,7 +126,7 @@ flowchart TD
 ## Features
 
 ### Attention Velocity Engine
-Scoring in Motion reflects momentum. MotionRadar calculates both directional movement ($+\Delta$ gainers and $-\Delta$ droppers) and absolute volatility ($|\Delta|$) to identify who is gaining or losing cultural traction.
+Scoring in Motion reflects momentum. MotionRadar calculates both directional movement (+Δ gainers and -Δ droppers) and absolute volatility (|Δ|) to identify who is gaining or losing cultural traction.
 
 ### Biggest Movers Radar
 A high-contrast card grid featuring the creators with the largest rank shifts in the current period, letting scouts spot breakouts before market prices adapt.
@@ -139,7 +140,7 @@ A dedicated page that walks new players through the core mechanics in under a mi
 ### Weekly 5-Creator Lineup Builder & Viral X Share
 Players draft a 5-person roster each week in Motion. MotionRadar includes an interactive floating lineup dock:
 - **Real-Time Lineup Draft**: Add/remove any creator with 1 click from the leaderboard table or Biggest Movers deck.
-- **Combined Momentum Score**: Real-time summation of net velocity ($\sum \Delta$) across your 5 drafted picks.
+- **Combined Momentum Score**: Real-time summation of net velocity (Σ Δ) across your 5 drafted picks.
 - **1-Click Share to X**: Instantly opens a pre-formatted viral scouting breakdown tagging `@motiongame_`, `@callmogbot`, `#Motion`, `#MotionSeats`, and `#Mogathon`.
 - **Instant Auto-Draft Presets**: 1-click auto-drafts the top 5 velocity gainers or top 5 Crypto/CT stars.
 
@@ -162,18 +163,18 @@ Built for Mogathon, **My Motion Board** lets scouts and players build, tier, and
 
 ### Analytical Scout Signals
 Provides actionable scouting theses beyond raw numbers:
-- **🚀 Breakout Velocity**: Creators moving $\ge +3$ spots with rapid attention rotation.
+- **🚀 Breakout Velocity**: Creators moving ≥ +3 spots with rapid attention rotation.
 - **📉 Oversold Dip**: High-conviction creators undergoing temporary rank drops (contrarian rebound targets).
 - **⚡ CT Momentum**: Crypto-native creators riding active Web3 / CT mindshare.
 - **💎 CT Discount**: Top crypto builders trading at a relative rank discount.
 - **🛡️ Blue Chip**: Top-5 cultural juggernauts anchoring the leaderboard.
-- **👀 Hidden Gem**: Mid/lower-tier creators climbing quietly with $\ge +2$ delta.
+- **👀 Hidden Gem**: Mid/lower-tier creators climbing quietly with ≥ +2 delta.
 - **✨ New Catalyst**: Fresh entries into the leaderboard.
 
 ### Fast Scouting Presets
-- **Seat Meta**: Isolates high-momentum breakout creators ($\Delta \ge 2$) optimal for weekly fantasy lineups.
+- **Seat Meta**: Isolates high-momentum breakout creators (Δ ≥ 2) optimal for weekly fantasy lineups.
 - **CT Elite**: Isolates verified Crypto Twitter creators.
-- **$|\Delta| \ge 2$**: Filters out static positions to show creators undergoing notable movement.
+- **|Δ| ≥ 2**: Filters out static positions to show creators undergoing notable movement.
 - **Top 10**: Focuses on the current leaderboard leaders.
 - **Contrarian Dips**: Surfaces oversold creators poised for rebound.
 
@@ -282,7 +283,7 @@ export interface LeaderboardResponse {
   - Wallet integration to import owned Motion creator cards.
   - Automated weekly 5-card lineup simulator maximizing expected positive delta.
 - [ ] **Phase 4: Real-Time Alerts**
-  - Webhook alerts (Discord/Telegram) for sudden rank movements ($|\Delta| \ge 5$).
+  - Webhook alerts (Discord/Telegram) for sudden rank movements (|Δ| ≥ 5).
 
 ---
 
